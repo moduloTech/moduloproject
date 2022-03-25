@@ -24,9 +24,9 @@ script='echo "Installing last version of Rails" && \
     echo "Configure name for default branch of git" && \
     git config --global init.defaultBranch master && \
     echo "Generate new Rails application" && \
-    rails new . -d postgresql -m /tmp/template.rb'
+    rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb'
 
 docker run --name moduloproject --rm -a STDOUT -ti -w $docker_project_directory \
   -v $local_project_directory:$docker_project_directory \
-  -v $MODULOTECH/moduloproject:/tmp \
-  -e "GIT_EMAIL=$git_email" -e "GIT_NAME=$git_name" ruby bash -c "$script"
+  -e "GIT_EMAIL=$git_email" -e "GIT_NAME=$git_name" \
+  ruby bash -c "$script"

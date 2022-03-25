@@ -23,9 +23,4 @@ after_bundle do
   git config: "--local user.email #{ENV['GIT_EMAIL']}"
   git config: "--local user.name #{ENV['GIT_NAME']}"
   git commit: '-am \'Initial commit\''
-
-  if (git_remote = ask('What is the address of the git remote?')).present?
-    git remote: "add origin #{git_remote}"
-    git push: '-u origin HEAD:master'
-  end
 end
