@@ -20,7 +20,24 @@ initializer 'modulorails.rb', <<~RUBY
 RUBY
 
 after_bundle do
-  git config: "--local user.email #{ENV['GIT_EMAIL']}"
-  git config: "--local user.name #{ENV['GIT_NAME']}"
+  # Dockerization
+  generate 'modulorails:docker'
+
+  # Gitlab CI setup
+  generate 'modulorails:gitlabci'
+
+  # Rubocop setup
+  generate 'modulorails:rubocop'
+
+  # ApplicationService creation
+  add_file 'app/services/application_service.rb', <<~RUBY
+    class ApplicationService < ::Modulorails::BaseService
+    end
+  RUBY
+
+  # Git commit
+  git config: "--local user.email '#{ENV['GIT_EMAIL']}'"
+  git config: "--local user.name '#{ENV['GIT_NAME']}'"
+  git add: '.'
   git commit: '-am \'Initial commit\''
 end
