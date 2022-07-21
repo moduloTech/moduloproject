@@ -35,6 +35,18 @@ after_bundle do
     end
   RUBY
 
+  # r.sh
+  add_file 'r.sh', <<~SH
+    #!/bin/sh
+
+    echo "Reseting migrations..."
+    bundle exec rake db:migrate:reset || exit 1
+    echo "Seeding database..."
+    bundle exec rake db:seed || exit 1
+    echo "Done !"
+  SH
+  chmod 'r.sh', 0o755
+
   # Git commit
   git config: "--local user.email '#{ENV['GIT_EMAIL']}'"
   git config: "--local user.name '#{ENV['GIT_NAME']}'"
