@@ -12,10 +12,10 @@ There are two components:
     - It adds and configures the gem [Modulorails](https://github.com/moduloTech/modulorails).
     - It setup the git repository.
 
-## Installation
+## Installation and update
 
 ```bash
-cd /usr/bin
+cd /usr/local/bin
 sudo curl -o moduloproject https://raw.githubusercontent.com/moduloTech/moduloproject/master/moduloproject
 sudo chmod +x moduloproject
 ```
