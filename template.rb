@@ -47,6 +47,9 @@ after_bundle do
   SH
   chmod 'r.sh', 0o755
 
+  # Fix rubocop issues
+  run 'rubocop -a'
+
   # Git commit
   git config: "--local user.email '#{ENV['GIT_EMAIL']}'"
   git config: "--local user.name '#{ENV['GIT_NAME']}'"
