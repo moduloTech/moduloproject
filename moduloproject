@@ -21,6 +21,8 @@ echo "Generate project $project_name"
 
 script='echo "Installing last version of Rails" && \
     gem install rails --no-document && \
+    echo "Installing last version of Bundler" && \
+    gem update --system && \
     echo "Configure name for default branch of git" && \
     git config --global init.defaultBranch master && \
     echo "Generate new Rails application" && \
