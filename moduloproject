@@ -1,21 +1,10 @@
 #!/bin/sh
 
-local_project_directory=`pwd -P`
+local_project_directory=$(pwd -P)
 project_name=${local_project_directory##*/}
 docker_project_directory="/$project_name"
-git_email=`git config --get user.email`
-git_name=`git config --get user.name`
-
-####################
-# Error handling
-####################
-set -eE -o functrace
-function failure() {
-  local lineno=$1
-  local msg=$2
-  echo "Failed at $lineno: $msg"
-}
-trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
+git_email=$(git config --get user.email)
+git_name=$(git config --get user.name)
 
 echo "Generate project $project_name"
 
@@ -28,7 +17,7 @@ script='echo "Installing last version of Rails" && \
     echo "Generate new Rails application" && \
     rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb'
 
-docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w $docker_project_directory \
-  -v $local_project_directory:$docker_project_directory \
+docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
+  -v "$local_project_directory":"$docker_project_directory" \
   -e "GIT_EMAIL=$git_email" -e "GIT_NAME=$git_name" \
   ruby:latest bash -c "$script"
