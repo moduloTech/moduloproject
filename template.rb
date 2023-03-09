@@ -19,6 +19,9 @@ initializer 'modulorails.rb', <<~RUBY
   end
 RUBY
 
+# Enable sassc-rails
+gsub_file 'Gemfile', /^#\s*(gem\s+['"]sassc-rails['"].*$)/, '\1'
+
 after_bundle do
   # Dockerization
   generate 'modulorails:docker'
