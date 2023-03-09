@@ -50,6 +50,12 @@ after_bundle do
   # Fix rubocop issues
   run 'rubocop -a'
 
+  # Add .idea to .gitignore
+  gitignore_file = '.gitignore'
+  unless File.read(gitignore_file).match?(/^\s\.idea/)
+    append_to_file(gitignore_file, "\n.idea\n")
+  end
+
   # Git commit
   git config: "--local user.email '#{ENV['GIT_EMAIL']}'"
   git config: "--local user.name '#{ENV['GIT_NAME']}'"
