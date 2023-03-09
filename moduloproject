@@ -1,5 +1,34 @@
 #!/bin/sh
 
+mode=$1
+interpreter=$2
+
+test -z "$mode" && mode=importmap
+test -z "$interpreter" && interpreter=mri
+
+if [ "$mode" = "-h" ] || [ "$mode" = "--help" ]; then
+  echo Allowed modes are \"importmap\", \"esbundling\" and \"webpack\"\; default to \"importmap\"
+  echo Allowed interpreters are \"mri\" and \"jruby\"\; default to \"mri\"
+  echo Usage: moduloproject \[mode\] \[interpreter\]
+  exit 0
+fi
+
+if [ "$mode" != "importmap" ] && [ "$mode" != "esbuild" ] && [ "$mode" != "webpack" ]; then
+  echo Unknown mode "$mode"
+  echo Allowed modes are \"importmap\", \"esbuild\" and \"webpack\"
+  echo usage: moduloproject \[mode\] \[interpreter\]
+  exit 1
+fi
+
+if [ "$interpreter" != "mri" ] && [ "$interpreter" != "jruby" ]; then
+  echo Unknown interpreter "$interpreter"
+  echo Allowed interpreters are \"mri\" and \"jruby\"
+  echo usage: moduloproject \[mode\] \[interpreter\]
+  exit 1
+fi
+
+echo Running with mode "$mode" on interpreter "$interpreter"
+
 local_project_directory=$(pwd -P)
 project_name=${local_project_directory##*/}
 docker_project_directory="/$project_name"
@@ -15,9 +44,18 @@ script='echo "Installing last version of Rails" && \
     echo "Configure name for default branch of git" && \
     git config --global init.defaultBranch master && \
     echo "Generate new Rails application" && \
-    rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb'
+    rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb $EXTRA_RAILS_ARGS'
+
+test "$interpreter" = "mri" && image="ruby:latest"
+test "$interpreter" = "jruby" && image="jruby:latest"
+
+if [ "$mode" != "importmap" ]; then
+  extra_rails_args="-j $JAVASCRIPT_MODE -c sass"
+else
+  extra_rails_args=""
+fi
 
 docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
   -v "$local_project_directory":"$docker_project_directory" \
-  -e "GIT_EMAIL=$git_email" -e "GIT_NAME=$git_name" \
-  ruby:latest bash -c "$script"
+  -e "GIT_EMAIL=$git_email" -e "GIT_NAME=$git_name" -e "JAVASCRIPT_MODE=$mode" -e "EXTRA_RAILS_ARGS=$extra_rails_args" \
+  "$image" bash -c "$script"
