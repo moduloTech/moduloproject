@@ -2,32 +2,34 @@
 
 mode=$1
 interpreter=$2
+version=$3
 
 test -z "$mode" && mode=importmap
 test -z "$interpreter" && interpreter=mri
+test -z "$version" && version=latest
 
 if [ "$mode" = "-h" ] || [ "$mode" = "--help" ]; then
   echo Allowed modes are \"importmap\", \"esbundling\" and \"webpack\"\; default to \"importmap\"
   echo Allowed interpreters are \"mri\" and \"jruby\"\; default to \"mri\"
-  echo Usage: moduloproject \[mode\] \[interpreter\]
+  echo Usage: moduloproject \[mode\] \[interpreter\] \[version\]
   exit 0
 fi
 
 if [ "$mode" != "importmap" ] && [ "$mode" != "esbuild" ] && [ "$mode" != "webpack" ]; then
   echo Unknown mode "$mode"
   echo Allowed modes are \"importmap\", \"esbuild\" and \"webpack\"
-  echo usage: moduloproject \[mode\] \[interpreter\]
+  echo usage: moduloproject \[mode\] \[interpreter\] \[version\]
   exit 1
 fi
 
 if [ "$interpreter" != "mri" ] && [ "$interpreter" != "jruby" ]; then
   echo Unknown interpreter "$interpreter"
   echo Allowed interpreters are \"mri\" and \"jruby\"
-  echo usage: moduloproject \[mode\] \[interpreter\]
+  echo usage: moduloproject \[mode\] \[interpreter\] \[version\]
   exit 1
 fi
 
-echo Running with mode "$mode" on interpreter "$interpreter"
+echo "Running with mode $mode on interpreter $interpreter (version $version)"
 
 local_project_directory=$(pwd -P)
 project_name=${local_project_directory##*/}
@@ -46,8 +48,8 @@ script='echo "Installing last version of Rails" && \
     echo "Generate new Rails application" && \
     rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb $EXTRA_RAILS_ARGS'
 
-test "$interpreter" = "mri" && image="ruby:latest"
-test "$interpreter" = "jruby" && image="jruby:latest"
+test "$interpreter" = "mri" && image="ruby:$version"
+test "$interpreter" = "jruby" && image="jruby:$version"
 
 if [ "$mode" != "importmap" ]; then
   extra_rails_args="-j $JAVASCRIPT_MODE -c sass"
