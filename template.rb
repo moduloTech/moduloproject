@@ -44,6 +44,9 @@ after_bundle do
   # Rubocop setup
   generate 'modulorails:rubocop'
 
+  # Standard configuration
+  generate 'modulorails:moduloproject'
+
   # ApplicationService creation
   add_file 'app/services/application_service.rb', <<~RUBY
     class ApplicationService < ::Modulorails::BaseService
