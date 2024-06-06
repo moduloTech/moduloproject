@@ -1,5 +1,6 @@
 gem 'modulorails'
 gem 'rails-i18n'
+gem 'redis'
 
 project_name = ask('What is the common name of the project?')
 main_developer = ask('What is the email of the project\'s main developer?')
