@@ -5,7 +5,7 @@ gem 'redis'
 # Lograge
 gem 'lograge'
 gem 'lograge-sql'
-gem 'sidekiq-datadog-error-tracking'
+gem 'datadog-logging'
 gem 'lograge-datadog-error-tracking'
 
 project_name = ask('What is the common name of the project?')
