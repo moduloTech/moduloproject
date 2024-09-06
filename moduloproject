@@ -40,7 +40,7 @@ git_name=$(git config --get user.name)
 echo "Generate project $project_name"
 
 script='echo "Installing last version of Rails" && \
-    gem install rails --no-document && \
+    gem install rails --version 7.1 --no-document && \
     echo "Installing last version of Bundler" && \
     gem update --system && \
     echo "Configure name for default branch of git" && \
