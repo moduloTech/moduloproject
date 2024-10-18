@@ -52,7 +52,7 @@ docker_project_directory="/$project_name"
 git_email=$(git config --get user.email)
 git_name=$(git config --get user.name)
 
-echo "Generate project $project_name"
+echo "Generating project $project_name"
 
 # Set the template URL based on beta mode
 if [ "$beta_mode" = true ]; then
@@ -61,13 +61,13 @@ else
   template_url="https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb"
 fi
 
-script='echo "Installing last version of Rails" && \
+script='echo "Installing latest version of Rails" && \
     gem install rails --no-document && \
-    echo "Installing last version of Bundler" && \
+    echo "Installing latest version of Bundler" && \
     gem update --system && \
-    echo "Configure name for default branch of git" && \
+    echo "Configuring name for default branch of git" && \
     git config --global init.defaultBranch master && \
-    echo "Generate new Rails application" && \
+    echo "Generating new Rails application" && \
     rails new . -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
 
 test "$interpreter" = "mri" && image="ruby:$version"
@@ -79,9 +79,33 @@ else
   extra_rails_args=""
 fi
 
+# Add variables for PostgreSQL
+postgres_container_name="moduloproject_postgres"
+postgres_password="mysecretpassword"
+
+echo "Starting PostgreSQL container"
+docker run --name $postgres_container_name -e POSTGRES_PASSWORD=$postgres_password -d postgres:latest
+
+# Wait for PostgreSQL to be ready
+echo "Waiting for PostgreSQL to start..."
+sleep 10
+
+# Get the IP address of the PostgreSQL container
+postgres_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $postgres_container_name)
+
+# Build the database URL
+database_url="postgres://postgres:${postgres_password}@${postgres_ip}:5432/postgres"
+
 # Run Docker command
 docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
   -v "$local_project_directory":"$docker_project_directory" \
   -e "GIT_AUTHOR_EMAIL=$git_email" -e "GIT_AUTHOR_NAME=$git_name" -e "GIT_COMMITTER_EMAIL=$git_email" -e "GIT_COMMITTER_NAME=$git_name" \
   -e "JAVASCRIPT_MODE=$mode" -e "EXTRA_RAILS_ARGS=$extra_rails_args" \
+  -e "DATABASE_URL=$database_url" \
+  --network host \
   "$image" bash -c "$script"
+
+# Cleanup: stop and remove PostgreSQL container
+echo "Cleanup: stopping PostgreSQL container"
+docker stop $postgres_container_name
+docker rm $postgres_container_name
