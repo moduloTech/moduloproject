@@ -25,6 +25,6 @@ sudo chmod +x moduloproject
 ```bash
 mkdir superproject
 cd superproject
-moduloproject
+moduloproject # Or `moduloproject -m importmap -i mri -v latest`; Use `moduloproject -h` to see all options
 docker compose up -d --build
 ```

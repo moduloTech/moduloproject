@@ -1,35 +1,44 @@
 #!/bin/sh
 
-mode=$1
-interpreter=$2
-version=$3
+# Initialize variables with default values
+mode="importmap"
+interpreter="mri"
+version="latest"
 
-test -z "$mode" && mode=importmap
-test -z "$interpreter" && interpreter=mri
-test -z "$version" && version=latest
+# Help function in English
+show_help() {
+  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-v VERSION] [-h]"
+  echo "  -m MODE         Mode (importmap, esbuild, webpack). Default: importmap"
+  echo "  -i INTERPRETER  Interpreter (mri, jruby). Default: mri"
+  echo "  -v VERSION      Version. Default: latest"
+  echo "  -h              Display this help message"
+}
 
-if [ "$mode" = "-h" ] || [ "$mode" = "--help" ]; then
-  echo Allowed modes are \"importmap\", \"esbuild\" and \"webpack\"\; default to \"importmap\"
-  echo Allowed interpreters are \"mri\" and \"jruby\"\; default to \"mri\"
-  echo Usage: moduloproject \[mode\] \[interpreter\] \[version\]
-  exit 0
-fi
+# Parse options
+while getopts "m:i:v:h" opt; do
+  case $opt in
+    m) mode=$OPTARG ;;
+    i) interpreter=$OPTARG ;;
+    v) version=$OPTARG ;;
+    h) show_help; exit 0 ;;
+    \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
+  esac
+done
 
+# Validate options
 if [ "$mode" != "importmap" ] && [ "$mode" != "esbuild" ] && [ "$mode" != "webpack" ]; then
-  echo Unknown mode "$mode"
-  echo Allowed modes are \"importmap\", \"esbuild\" and \"webpack\"
-  echo usage: moduloproject \[mode\] \[interpreter\] \[version\]
+  echo "Unknown mode: $mode" >&2
+  show_help
   exit 1
 fi
 
 if [ "$interpreter" != "mri" ] && [ "$interpreter" != "jruby" ]; then
-  echo Unknown interpreter "$interpreter"
-  echo Allowed interpreters are \"mri\" and \"jruby\"
-  echo usage: moduloproject \[mode\] \[interpreter\] \[version\]
+  echo "Unknown interpreter: $interpreter" >&2
+  show_help
   exit 1
 fi
 
-echo "Running with mode $mode on interpreter $interpreter (version $version)"
+echo "Executing with mode $mode on interpreter $interpreter (version $version)"
 
 local_project_directory=$(pwd -P)
 project_name=${local_project_directory##*/}
@@ -57,6 +66,7 @@ else
   extra_rails_args=""
 fi
 
+# Run Docker command
 docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
   -v "$local_project_directory":"$docker_project_directory" \
   -e "GIT_AUTHOR_EMAIL=$git_email" -e "GIT_AUTHOR_NAME=$git_name" -e "GIT_COMMITTER_EMAIL=$git_email" -e "GIT_COMMITTER_NAME=$git_name" \
