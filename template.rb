@@ -170,8 +170,5 @@ after_bundle do
   append_to_file(gitignore_file, "\n.idea\n") unless File.read(gitignore_file).match?(/^\s\.idea/)
 
   # Git commit
-  git config: "--local user.email '#{ENV['GIT_EMAIL']}'"
-  git config: "--local user.name '#{ENV['GIT_NAME']}'"
-  git add: '.'
   git commit: '-am \'Initial commit\''
 end
