@@ -4,22 +4,25 @@
 mode="importmap"
 interpreter="mri"
 version="latest"
+beta_mode=false
 
 # Help function in English
 show_help() {
-  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-v VERSION] [-h]"
+  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-v VERSION] [-b] [-h]"
   echo "  -m MODE         Mode (importmap, esbuild, webpack). Default: importmap"
   echo "  -i INTERPRETER  Interpreter (mri, jruby). Default: mri"
   echo "  -v VERSION      Version. Default: latest"
+  echo "  -b              Enable beta mode (uses development branch)"
   echo "  -h              Display this help message"
 }
 
 # Parse options
-while getopts "m:i:v:h" opt; do
+while getopts "m:i:v:bh" opt; do
   case $opt in
     m) mode=$OPTARG ;;
     i) interpreter=$OPTARG ;;
     v) version=$OPTARG ;;
+    b) beta_mode=true ;;
     h) show_help; exit 0 ;;
     \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
   esac
@@ -39,6 +42,9 @@ if [ "$interpreter" != "mri" ] && [ "$interpreter" != "jruby" ]; then
 fi
 
 echo "Executing with mode $mode on interpreter $interpreter (version $version)"
+if [ "$beta_mode" = true ]; then
+  echo "Beta mode enabled: using development branch"
+fi
 
 local_project_directory=$(pwd -P)
 project_name=${local_project_directory##*/}
@@ -48,14 +54,21 @@ git_name=$(git config --get user.name)
 
 echo "Generate project $project_name"
 
+# Set the template URL based on beta mode
+if [ "$beta_mode" = true ]; then
+  template_url="https://raw.githubusercontent.com/moduloTech/moduloproject/development/template.rb"
+else
+  template_url="https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb"
+fi
+
 script='echo "Installing last version of Rails" && \
-    gem install rails --version 7.1 --no-document && \
+    gem install rails --no-document && \
     echo "Installing last version of Bundler" && \
     gem update --system && \
     echo "Configure name for default branch of git" && \
     git config --global init.defaultBranch master && \
     echo "Generate new Rails application" && \
-    rails new . -d postgresql -m https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb $EXTRA_RAILS_ARGS'
+    rails new . -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
 
 test "$interpreter" = "mri" && image="ruby:$version"
 test "$interpreter" = "jruby" && image="jruby:$version"
