@@ -1,4 +1,8 @@
-gem 'modulorails'
+if ENV['MODULORAILS_BETA_MODE'] == 'true'
+  gem 'modulorails', git: 'https://github.com/ModuloTech/modulorails.git', branch: 'development'
+else
+  gem 'modulorails'
+end
 gem 'rails-i18n'
 gem 'redis'
 
