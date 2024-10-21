@@ -46,15 +46,6 @@ RUBY
 gsub_file 'Gemfile', /^#\s*(gem\s+['"]sassc-rails['"].*$)/, '\1'
 
 after_bundle do
-  # Dockerization
-  generate 'modulorails:docker'
-
-  # Gitlab CI setup
-  generate 'modulorails:gitlabci'
-
-  # Rubocop setup
-  generate 'modulorails:rubocop'
-
   # Standard configuration
   generate 'modulorails:moduloproject'
 
