@@ -54,27 +54,28 @@ update_script() {
 
 # Help function in English
 show_help() {
-  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-r RUBY_VERSION] [-b] [-u] [-h] [-v]"
-  echo "  -m MODE         Mode (importmap, esbuild, webpack). Default: importmap"
-  echo "  -i INTERPRETER  Interpreter (mri, jruby). Default: mri"
-  echo "  -r RUBY_VERSION Ruby version. Default: latest"
-  echo "  -b              Enable beta mode (uses development branch)"
-  echo "  -u              Force update check"
-  echo "  -h              Display this help message"
-  echo "  -v              Display script version"
+  echo "Usage: moduloproject [OPTIONS]"
+  echo "Options:"
+  echo "  -m, --mode MODE                 Mode (importmap, esbuild, webpack). Default: importmap"
+  echo "  -i, --interpreter INTERPRETER   Interpreter (mri, jruby). Default: mri"
+  echo "  -r, --ruby-version RUBY_VERSION Ruby version. Default: latest"
+  echo "  -b, --beta                      Enable beta mode (uses development branch)"
+  echo "  -u, --update                    Force update check"
+  echo "  -h, --help                      Display this help message"
+  echo "  -v, --version                   Display script version"
 }
 
 # Parse options
-while getopts "m:i:r:buhv" opt; do
-  case $opt in
-    m) mode=$OPTARG ;;
-    i) interpreter=$OPTARG ;;
-    r) ruby_version=$OPTARG ;;
-    b) beta_mode=true ;;
-    u) update_script "https://raw.githubusercontent.com/moduloTech/moduloproject/master/moduloproject" true ;;
-    h) show_help; exit 0 ;;
-    v) echo "moduloproject version $SCRIPT_VERSION"; exit 0 ;;
-    \?) echo "Invalid option: -$OPTARG" >&2; show_help; exit 1 ;;
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -m|--mode) mode="$2"; shift 2 ;;
+    -i|--interpreter) interpreter="$2"; shift 2 ;;
+    -r|--ruby-version) ruby_version="$2"; shift 2 ;;
+    -b|--beta) beta_mode=true; shift ;;
+    -u|--update) update_script "https://raw.githubusercontent.com/moduloTech/moduloproject/master/moduloproject" true; shift ;;
+    -h|--help) show_help; exit 0 ;;
+    -v|--version) echo "moduloproject version $SCRIPT_VERSION"; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; show_help; exit 1 ;;
   esac
 done
 
