@@ -54,21 +54,21 @@ update_script() {
 
 # Help function in English
 show_help() {
-  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-v VERSION] [-b] [-u] [-h]"
+  echo "Usage: moduloproject [-m MODE] [-i INTERPRETER] [-r RUBY_VERSION] [-b] [-u] [-h]"
   echo "  -m MODE         Mode (importmap, esbuild, webpack). Default: importmap"
   echo "  -i INTERPRETER  Interpreter (mri, jruby). Default: mri"
-  echo "  -v VERSION      Version. Default: latest"
+  echo "  -r RUBY_VERSION Ruby version. Default: latest"
   echo "  -b              Enable beta mode (uses development branch)"
   echo "  -u              Force update check"
   echo "  -h              Display this help message"
 }
 
 # Parse options
-while getopts "m:i:v:buh" opt; do
+while getopts "m:i:r:buh" opt; do
   case $opt in
     m) mode=$OPTARG ;;
     i) interpreter=$OPTARG ;;
-    v) version=$OPTARG ;;
+    r) ruby_version=$OPTARG ;;
     b) beta_mode=true ;;
     u) update_script "https://raw.githubusercontent.com/moduloTech/moduloproject/master/moduloproject" true ;;
     h) show_help; exit 0 ;;
