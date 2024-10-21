@@ -174,5 +174,6 @@ after_bundle do
   append_to_file(gitignore_file, "\n.idea\n") unless File.read(gitignore_file).match?(/^\s\.idea/)
 
   # Git commit
+  git add: '.'
   git commit: '-am \'Initial commit\''
 end
