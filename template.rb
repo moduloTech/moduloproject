@@ -141,7 +141,7 @@ after_bundle do
 
   # ApplicationService creation
   add_file 'app/services/application_service.rb', <<~RUBY
-    class ApplicationService < ::Modulorails::BaseService
+    class ApplicationService < Modulorails::BaseService
     end
   RUBY
 
