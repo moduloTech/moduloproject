@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script version
-SCRIPT_VERSION="1.2"
+SCRIPT_VERSION="2.0.pre1"
 
 # Initialize variables with default values
 mode="importmap"
@@ -129,7 +129,8 @@ script='echo "Installing latest version of Rails" && \
     echo "Configuring name for default branch of git" && \
     git config --global init.defaultBranch master && \
     echo "Generating new Rails application" && \
-    rails new . -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
+    rails new . --skip-docker --skip-test --skip-system-test --skip-rubocop --skip-ci --skip-kamal --skip-solid \
+    -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
 
 # Fully qualified so that podman does not depend on short-name resolution
 test "$interpreter" = "mri" && image="docker.io/library/ruby:$version"
