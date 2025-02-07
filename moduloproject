@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Script version
 SCRIPT_VERSION="1.2"
@@ -22,7 +22,7 @@ update_script() {
         if [ -z "$new_version" ]; then
             echo "Failed to check for updates: no version found in the downloaded script."
         elif [ "$new_version" != "$SCRIPT_VERSION" ]; then
-            if [ "$force" = true ] || [ "$beta_mode" = true -a "$force" = false ]; then
+            if [ "$force" = true ] || [ "$beta_mode" = true ] && [ "$force" = false ]; then
                 printf "New version %s available. Update? (y/n) " "$new_version"
                 read -r REPLY
                 if [ "$REPLY" = y ] || [ "$REPLY" = Y ]; then
@@ -72,7 +72,7 @@ while [ "$#" -gt 0 ]; do
   case "$1" in
     -m|--mode) mode="$2"; shift 2 ;;
     -i|--interpreter) interpreter="$2"; shift 2 ;;
-    -r|--ruby-version) ruby_version="$2"; shift 2 ;;
+    -r|--ruby-version) version="$2"; shift 2 ;;
     -b|--beta) beta_mode=true; shift ;;
     -u|--update) update_script "https://raw.githubusercontent.com/moduloTech/moduloproject/master/moduloproject" true; shift ;;
     -h|--help) show_help; exit 0 ;;
@@ -121,6 +121,7 @@ else
   template_url="https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb"
 fi
 
+# shellcheck disable=SC2016
 script='echo "Installing latest version of Rails" && \
     gem install rails --no-document && \
     echo "Installing latest version of Bundler" && \
