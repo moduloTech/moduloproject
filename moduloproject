@@ -174,6 +174,13 @@ postgres_password="mysecretpassword"
 # alike; not 5432, which a local PostgreSQL often holds already
 postgres_port="${POSTGRES_PORT:-55432}"
 
+# Stop and remove existing PostgreSQL container
+if docker ps -a --format '{{.Names}}' | grep -q "^$postgres_container_name\$"; then
+    echo "Stopping existing PostgreSQL container"
+    docker stop $postgres_container_name
+    docker rm $postgres_container_name
+fi
+
 echo "Starting PostgreSQL container"
 $engine run --name $postgres_container_name -e POSTGRES_PASSWORD=$postgres_password \
   -p "127.0.0.1:$postgres_port:5432" -d docker.io/library/postgres:latest
