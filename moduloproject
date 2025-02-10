@@ -9,39 +9,50 @@ interpreter="mri"
 version="latest"
 beta_mode=false
 
+# Helper function: Manage file operations for update
+perform_update() {
+    local new_version=$1
+    if sudo mv "/tmp/moduloproject_new" "/usr/local/bin/moduloproject" && sudo chmod +x "/usr/local/bin/moduloproject"; then
+        echo "Updated to version $new_version. Please run the script again."
+        exit 0
+    else
+        echo "Update failed. Please try again or update manually."
+        exit 1
+    fi
+}
+
+# Helper function: Prompt user for confirmation
+confirm_update() {
+    local new_version=$1
+        read -p "New version $new_version available. Update? (y/n) " -n 1 -r
+        echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo "Proceeding with the update..."
+        perform_update "$new_version"
+    else
+        echo "Update canceled."
+    fi
+}
+
 # Function to update the script
 update_script() {
     local url=$1
     local force=$2
     echo "Checking for updates..."
 
-    # Download the new version
+    # Download new version
     if curl -s "$url" -o "/tmp/moduloproject_new"; then
-        # Compare versions
+        local new_version
         new_version=$(grep "SCRIPT_VERSION=" "/tmp/moduloproject_new" | cut -d'"' -f2 | grep -v "SCRIPT_VERSION")
         if [ "$new_version" != "$SCRIPT_VERSION" ]; then
-            if [ "$force" = true ] || [ "$beta_mode" = true ] && [ "$force" = false ]; then
-                read -p "New version $new_version available. Update? (y/n) " -n 1 -r
-                echo
-                if [[ $REPLY =~ ^[Yy]$ ]]; then
-                    echo "Updating script..."
-                    if sudo mv "/tmp/moduloproject_new" "/usr/local/bin/moduloproject" && sudo chmod +x "/usr/local/bin/moduloproject"; then
-                        echo "Update successful. Please run the script again."
-                        exit 0
-                    else
-                        echo "Update failed. Please try again or update manually."
-                        exit 1
-                    fi
-                fi
-            elif [ "$force" = true ]; then
+            if [ "$force" = true ]; then
                 echo "Forcing update to version $new_version..."
-                if sudo mv "/tmp/moduloproject_new" "/usr/local/bin/moduloproject" && sudo chmod +x "/usr/local/bin/moduloproject"; then
-                    echo "Forced update successful. Please run the script again."
-                    exit 0
-                else
-                    echo "Forced update failed. Please try again or update manually."
-                    exit 1
-                fi
+                perform_update "$new_version"
+            elif [ "$beta_mode" = true ]; then
+                echo "Beta mode enabled."
+                confirm_update "$new_version"
+            else
+                confirm_update "$new_version"
             fi
         else
             echo "You are already using the latest version."
