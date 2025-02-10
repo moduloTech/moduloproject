@@ -154,6 +154,13 @@ fi
 postgres_container_name="moduloproject_postgres"
 postgres_password="mysecretpassword"
 
+# Stop and remove existing PostgreSQL container
+if docker ps -a --format '{{.Names}}' | grep -q "^$postgres_container_name\$"; then
+    echo "Stopping existing PostgreSQL container"
+    docker stop $postgres_container_name
+    docker rm $postgres_container_name
+fi
+
 echo "Starting PostgreSQL container"
 docker run --name $postgres_container_name -e POSTGRES_PASSWORD=$postgres_password -d postgres:latest
 
