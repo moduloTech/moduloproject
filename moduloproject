@@ -18,7 +18,7 @@ update_script() {
     # Download the new version
     if curl -s "$url" -o "/tmp/moduloproject_new"; then
         # Compare versions
-        new_version=$(grep "SCRIPT_VERSION=" "$(which moduloproject)" | cut -d'"' -f2 | grep -v "SCRIPT_VERSION")
+        new_version=$(grep "SCRIPT_VERSION=" "/tmp/moduloproject_new" | cut -d'"' -f2 | grep -v "SCRIPT_VERSION")
         if [ "$new_version" != "$SCRIPT_VERSION" ]; then
             if [ "$force" = true ] || [ "$beta_mode" = true ] && [ "$force" = false ]; then
                 read -p "New version $new_version available. Update? (y/n) " -n 1 -r
