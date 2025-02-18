@@ -67,7 +67,7 @@ update_script() {
 show_help() {
   echo "Usage: moduloproject [OPTIONS]"
   echo "Options:"
-  echo "  -m, --mode MODE                 Mode (importmap, esbuild, webpack). Default: importmap"
+  echo "  -m, --mode MODE                 Mode (importmap, bun, webpack). Default: importmap"
   echo "  -i, --interpreter INTERPRETER   Interpreter (mri, jruby). Default: mri"
   echo "  -r, --ruby-version RUBY_VERSION Ruby version. Default: latest"
   echo "  -b, --beta                      Enable beta mode (uses development branch)"
@@ -98,7 +98,7 @@ else
 fi
 
 # Validate options
-if [ "$mode" != "importmap" ] && [ "$mode" != "esbuild" ] && [ "$mode" != "webpack" ]; then
+if [ "$mode" != "importmap" ] && [ "$mode" != "bun" ] && [ "$mode" != "webpack" ]; then
   echo "Unknown mode: $mode" >&2
   show_help
   exit 1
