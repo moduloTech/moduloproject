@@ -53,6 +53,11 @@ gsub_file 'Gemfile', /^#\s*(gem\s+['"]sassc-rails['"].*$)/, '\1'
 after_bundle do
   # Standard configuration
   generate 'modulorails:moduloproject'
+  generate 'modulorails:docker'
+  generate 'modulorails:gitlabci'
+  generate 'modulorails:rubocop'
+  generate 'modulorails:githooks'
+  generate 'modulorails:bundleraudit'
 
   # mise configuration, pinned to the Ruby of the Dockerfile written by modulorails:docker
   ruby_version = File.read(File.join(destination_root, 'Dockerfile'))[/^ARG RUBY_VERSION=(\S+)/, 1]
