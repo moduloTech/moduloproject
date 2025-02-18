@@ -48,6 +48,11 @@ gsub_file 'Gemfile', /^#\s*(gem\s+['"]sassc-rails['"].*$)/, '\1'
 after_bundle do
   # Standard configuration
   generate 'modulorails:moduloproject'
+  generate 'modulorails:docker'
+  generate 'modulorails:gitlabci'
+  generate 'modulorails:rubocop'
+  generate 'modulorails:githooks'
+  generate 'modulorails:bundleraudit'
 
   # Lograge configuration
   add_file 'config/initializers/lograge.rb', <<~RUBY
