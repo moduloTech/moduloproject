@@ -193,7 +193,7 @@ database_url="postgres://postgres:${postgres_password}@${postgres_ip}:5432/postg
 docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
   -v "$local_project_directory":"$docker_project_directory" \
   -e "GIT_AUTHOR_EMAIL=$git_email" -e "GIT_AUTHOR_NAME=$git_name" -e "GIT_COMMITTER_EMAIL=$git_email" -e "GIT_COMMITTER_NAME=$git_name" \
-  -e "EXTRA_RAILS_ARGS=$extra_rails_args" -e "MODULORAILS_BETA_MODE=$beta_mode" \
+  -e "EXTRA_RAILS_ARGS=$extra_rails_args" -e "MODULORAILS_BETA_MODE=$beta_mode" -e "RAILS_ENV=production" \
   -e "DATABASE_URL=$database_url" \
   --network host \
   "$image" bash -c "$script"
