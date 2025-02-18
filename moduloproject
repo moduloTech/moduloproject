@@ -67,7 +67,7 @@ update_script() {
 show_help() {
   echo "Usage: moduloproject [OPTIONS]"
   echo "Options:"
-  echo "  -m, --mode MODE                 Mode (importmap, bun, webpack). Default: importmap"
+  echo "  -m, --mode MODE                 Mode (importmap, bun). Default: importmap"
   echo "  -i, --interpreter INTERPRETER   Interpreter (mri, jruby). Default: mri"
   echo "  -r, --ruby-version RUBY_VERSION Ruby version. Default: latest"
   echo "  -b, --beta                      Enable beta mode (uses development branch)"
@@ -98,7 +98,7 @@ else
 fi
 
 # Validate options
-if [ "$mode" != "importmap" ] && [ "$mode" != "bun" ] && [ "$mode" != "webpack" ]; then
+if [ "$mode" != "importmap" ] && [ "$mode" != "bun" ]; then
   echo "Unknown mode: $mode" >&2
   show_help
   exit 1
@@ -130,24 +130,39 @@ else
   template_url="https://raw.githubusercontent.com/moduloTech/moduloproject/master/template.rb"
 fi
 
-# shellcheck disable=SC2016
-script='echo "Installing latest version of Rails" && \
-    gem install rails --no-document && \
-    echo "Installing latest version of Bundler" && \
-    gem update --system && \
-    echo "Configuring name for default branch of git" && \
-    git config --global init.defaultBranch master && \
-    echo "Generating new Rails application" && \
-    rails new . --skip-docker --skip-test --skip-system-test --skip-rubocop --skip-ci --skip-kamal --skip-solid \
-    -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
-
 test "$interpreter" = "mri" && image="ruby:$version"
 test "$interpreter" = "jruby" && image="jruby:$version"
 
 if [ "$mode" != "importmap" ]; then
-  extra_rails_args="-j $JAVASCRIPT_MODE -c sass"
+  extra_rails_args="-j $mode -c bootstrap"
 else
   extra_rails_args=""
+fi
+
+# shellcheck disable=SC2016
+if [ "$mode" = "bun" ]; then
+    script='echo "Installing latest version of Rails" && \
+        gem install rails --no-document && \
+        echo "Installing latest version of Bundler" && \
+        gem update --system && \
+        echo "Configuring name for default branch of git" && \
+        git config --global init.defaultBranch master && \
+        echo "Install bun" && \
+        curl -fsSL https://bun.sh/install | bash && \
+        echo "Generating new Rails application" && \
+        rails new . --skip-docker --skip-test --skip-system-test --skip-rubocop --skip-ci --skip-kamal --skip-solid \
+        -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
+else
+    script='echo "Installing latest version of Rails" && \
+        gem install rails --no-document && \
+        echo "Installing latest version of Bundler" && \
+        gem update --system && \
+        echo "Configuring name for default branch of git" && \
+        git config --global init.defaultBranch master && \
+        echo "Generating new Rails application" && \
+        echo rails new . --skip-docker --skip-test --skip-system-test --skip-rubocop --skip-ci --skip-kamal --skip-solid \
+        -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS && \
+        bash'
 fi
 
 # Add variables for PostgreSQL
@@ -178,7 +193,7 @@ database_url="postgres://postgres:${postgres_password}@${postgres_ip}:5432/postg
 docker run --name moduloproject --pull=always --rm -a STDOUT -ti -w "$docker_project_directory" \
   -v "$local_project_directory":"$docker_project_directory" \
   -e "GIT_AUTHOR_EMAIL=$git_email" -e "GIT_AUTHOR_NAME=$git_name" -e "GIT_COMMITTER_EMAIL=$git_email" -e "GIT_COMMITTER_NAME=$git_name" \
-  -e "JAVASCRIPT_MODE=$mode" -e "EXTRA_RAILS_ARGS=$extra_rails_args" -e "MODULORAILS_BETA_MODE=$beta_mode" \
+  -e "EXTRA_RAILS_ARGS=$extra_rails_args" -e "MODULORAILS_BETA_MODE=$beta_mode" \
   -e "DATABASE_URL=$database_url" \
   --network host \
   "$image" bash -c "$script"
