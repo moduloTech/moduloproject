@@ -151,7 +151,7 @@ after_bundle do
   RUBY
 
   # Fix rubocop issues
-  run 'rubocop -a'
+  run 'rubocop -A || echo'
 
   # Add .idea to .gitignore
   gitignore_file = '.gitignore'
