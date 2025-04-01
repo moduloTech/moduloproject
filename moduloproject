@@ -151,7 +151,8 @@ if [ "$mode" = "bun" ]; then
         curl -fsSL https://bun.sh/install | bash && \
         echo "Generating new Rails application" && \
         export PATH="$BUN_INSTALL/bin:$PATH" && \
-        touch bun.lock bun.lockb && \
+        echo "# Old name (and format) for bun lockfile\n# Still used by some gems to recognize Bun is used." > bun.lockb && \
+        touch bun.lock && \
         rails new . --skip-docker --skip-test --skip-system-test --skip-rubocop \
         --skip-ci --skip-kamal --skip-solid -d postgresql -m '"$template_url"' $EXTRA_RAILS_ARGS'
 else
