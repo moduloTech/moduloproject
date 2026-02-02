@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Script version
-SCRIPT_VERSION="2.0.pre1"
+SCRIPT_VERSION="2.0"
 
 # Initialize variables with default values
 mode="importmap"
