@@ -1,7 +1,7 @@
 if ENV['MODULORAILS_BETA_MODE'] == 'true'
   gem 'modulorails', git: 'https://github.com/ModuloTech/modulorails.git', branch: 'development'
 else
-  gem 'modulorails'
+  gem 'modulorails', '1.6.0'
 end
 gem 'rails-i18n'
 gem 'redis'
