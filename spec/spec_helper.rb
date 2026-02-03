@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
 require 'bundler/setup'
+require 'fileutils'
+require 'tmpdir'
+require 'yaml'
+
 require 'moduloproject'
 require 'moduloproject/cli'
+require 'moduloproject/context'
+require 'moduloproject/template_engine'
+require 'moduloproject/generators'
 require 'moduloproject/version_check'
 require 'webmock/rspec'
 

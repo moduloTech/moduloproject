@@ -1,0 +1,52 @@
+FROM ruby:<%= ruby_version %>-alpine
+
+ENV RAILS_ENV=development
+ENV EDITOR=vim
+WORKDIR /rails
+
+RUN apk add --update --no-cache \
+    alpine-sdk \
+    nodejs \
+    tzdata \
+    gcompat \
+    vim \
+    bash \
+    openssh \
+    yaml-dev \
+    curl \
+<%- if mysql? -%>
+    mysql-dev
+<%- else -%>
+    postgresql-dev
+<%- end -%>
+RUN gem install bundler -v <%= bundler_version %>
+
+<%- if webpacker? -%>
+RUN apk add yarn
+
+# Install node modules
+COPY package.json yarn.lock ./
+RUN yarn install
+<%- elsif bun? -%>
+# Install bun
+ENV BUN_INSTALL=/usr/local/bun
+ENV PATH="$BUN_INSTALL/bin:$PATH"
+RUN curl -fsSL https://bun.sh/install | bash
+
+# Install node modules
+COPY package.json bun.lock ./
+RUN bun install
+<%- end -%>
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install --jobs=2
+
+COPY . .
+
+RUN sed -i 's:/bin/ash:/bin/bash:g' /etc/passwd
+
+EXPOSE 3000
+
+ENTRYPOINT ["./bin/docker-entrypoint"]
+
+CMD ["sleep", "infinity"]

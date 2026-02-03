@@ -22,10 +22,13 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   spec.files = Dir.chdir(__dir__) do
-    `git ls-files -z`.split("\x0").reject do |f|
+    git_files = `git ls-files -z`.split("\x0").reject do |f|
       (File.expand_path(f) == __FILE__) ||
         f.start_with?('bin/', 'spec/', '.git', '.rubocop', 'Gemfile')
     end
+    # Include templates directory which may not be tracked yet
+    template_files = Dir.glob('templates/**/*').select { |f| File.file?(f) }
+    (git_files + template_files).uniq
   end
   spec.bindir        = 'exe'
   spec.executables   = ['moduloproject']

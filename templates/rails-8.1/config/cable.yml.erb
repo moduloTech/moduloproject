@@ -1,0 +1,15 @@
+redis_remote: &redis_remote
+  adapter: redis
+  url: <%%= defined?(REDIS_URL) ? REDIS_URL : ENV.fetch('REDIS_URL', 'redis://redis:6379') %>
+
+development:
+  <<: *redis_remote
+
+test:
+  <<: *redis_remote
+
+staging:
+  <<: *redis_remote
+
+production:
+  <<: *redis_remote

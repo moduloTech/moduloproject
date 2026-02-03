@@ -1,0 +1,95 @@
+# <%= project_name %>
+
+This is a Ruby on Rails application managed with Moduloproject conventions.
+
+## Project Overview
+
+- **Ruby Version**: <%= ruby_version %>
+- **Rails Version**: <%= rails_version %>
+- **Database**: <%= mysql? ? 'MySQL' : 'PostgreSQL' %>
+<%- if webpacker? -%>
+- **JavaScript**: Webpacker
+<%- elsif bun? -%>
+- **JavaScript**: Bun
+<%- else -%>
+- **JavaScript**: Import Maps
+<%- end -%>
+
+## Development Environment
+
+This project uses Docker with devcontainers for development. The configuration is in `.devcontainer/`.
+
+### Starting the development environment
+
+```bash
+# Using VS Code with Dev Containers extension
+# Simply open the project and select "Reopen in Container"
+
+# Or manually with Docker Compose
+docker compose -f .devcontainer/compose.yml up
+```
+
+### Running commands in the container
+
+```bash
+# Use bin/dcr to run commands in a new container
+bin/dcr bundle exec rails console
+
+# Use bin/dc to run docker compose commands
+bin/dc logs app
+```
+
+## Testing
+
+```bash
+# Run all tests
+bin/test
+
+# Or directly with RSpec
+bundle exec rspec
+
+# Run specific test file
+bundle exec rspec spec/models/user_spec.rb
+```
+
+## Code Style
+
+This project uses RuboCop for Ruby code style. Configuration is in `.rubocop.yml`.
+
+```bash
+# Check code style
+bundle exec rubocop
+
+# Auto-correct issues
+bundle exec rubocop -A
+```
+
+## Database
+
+```bash
+# Create and migrate database
+bundle exec rails db:prepare
+
+# Run migrations
+bundle exec rails db:migrate
+
+# Reset database
+bundle exec rails db:reset
+```
+
+## Key Directories
+
+- `app/` - Application code (models, controllers, views, etc.)
+- `config/` - Configuration files
+- `db/` - Database migrations and schema
+- `spec/` - RSpec tests
+- `.devcontainer/` - Docker development environment
+- `bin/` - Executable scripts
+
+## Git Hooks
+
+This project includes git hooks for automatic file regeneration:
+- `post-rewrite`: Regenerates files after rebase
+- `pre-merge-commit`: Regenerates files before merge commit
+
+The hooks use `bin/refresh_generations` to update generated files.
