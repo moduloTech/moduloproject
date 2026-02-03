@@ -101,6 +101,21 @@ RSpec.describe Moduloproject::Generators::Docker do
     end
   end
 
+  describe 'when skip_generation? returns true' do
+    let(:generator_without_force) { described_class.new(context) }
+
+    before do
+      keepfile_path = File.join(project_root, '.moduloproject.yml')
+      File.write(keepfile_path, { 'docker' => { 'version' => 2 } }.to_yaml)
+    end
+
+    it 'returns GENERATED_FILES without creating files' do
+      result = generator_without_force.generate
+      expect(result).to eq(described_class::GENERATED_FILES)
+      expect(File.exist?(File.join(project_root, 'Dockerfile'))).to be false
+    end
+  end
+
   describe '#generator_name' do
     it 'returns docker' do
       expect(generator.generator_name).to eq('docker')

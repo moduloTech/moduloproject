@@ -139,6 +139,51 @@ RSpec.describe Moduloproject::VersionCheck do
         expect { described_class.check_and_notify }.not_to raise_error
       end
     end
+
+    context 'when cache exists but has no timestamp' do
+      before do
+        FileUtils.mkdir_p(cache_dir)
+        cache_data = { 'version' => '3.0.0' }
+        File.write(cache_file, JSON.generate(cache_data))
+        stub_request(:get, rubygems_url)
+          .to_return(status: 200, body: '{"version":"3.0.0"}')
+      end
+
+      it 'fetches from API' do
+        request = stub_request(:get, rubygems_url)
+                  .to_return(status: 200, body: '{"version":"3.0.0"}')
+
+        described_class.check_and_notify
+
+        expect(request).to have_been_requested
+      end
+    end
+
+    context 'when API returns non-success response' do
+      before do
+        stub_request(:get, rubygems_url)
+          .to_return(status: 404, body: 'Not Found')
+      end
+
+      it 'does not display notification' do
+        allow(described_class).to receive(:display_update_notification)
+
+        described_class.check_and_notify
+
+        expect(described_class).not_to have_received(:display_update_notification)
+      end
+    end
+
+    context 'when an unexpected error occurs' do
+      before do
+        allow(described_class).to receive(:fetch_latest_version).and_raise(StandardError, 'Unexpected error')
+      end
+
+      it 'silently rescues and returns nil' do
+        result = described_class.check_and_notify
+        expect(result).to be_nil
+      end
+    end
   end
 
   describe '.display_update_notification' do

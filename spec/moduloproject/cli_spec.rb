@@ -5,6 +5,42 @@ RSpec.describe Moduloproject::CLI do
     allow(Moduloproject::VersionCheck).to receive(:check_and_notify)
   end
 
+  describe '.start' do
+    context 'when MODULOPROJECT_SKIP_VERSION_CHECK is not set' do
+      around do |example|
+        original = ENV.fetch('MODULOPROJECT_SKIP_VERSION_CHECK', nil)
+        ENV.delete('MODULOPROJECT_SKIP_VERSION_CHECK')
+        example.run
+        ENV['MODULOPROJECT_SKIP_VERSION_CHECK'] = original if original
+      end
+
+      it 'calls VersionCheck.check_and_notify' do
+        described_class.start(['version'])
+        expect(Moduloproject::VersionCheck).to have_received(:check_and_notify)
+      end
+    end
+
+    context 'when MODULOPROJECT_SKIP_VERSION_CHECK is 1' do
+      around do |example|
+        original = ENV.fetch('MODULOPROJECT_SKIP_VERSION_CHECK', nil)
+        ENV['MODULOPROJECT_SKIP_VERSION_CHECK'] = '1'
+        example.run
+        ENV['MODULOPROJECT_SKIP_VERSION_CHECK'] = original if original
+      end
+
+      it 'skips VersionCheck.check_and_notify' do
+        described_class.start(['version'])
+        expect(Moduloproject::VersionCheck).not_to have_received(:check_and_notify)
+      end
+    end
+  end
+
+  describe '.exit_on_failure?' do
+    it 'returns true' do
+      expect(described_class.exit_on_failure?).to be true
+    end
+  end
+
   describe 'version command' do
     it 'displays the version' do
       expect { described_class.start(['version']) }.to output(/moduloproject 3\.0\.0/).to_stdout

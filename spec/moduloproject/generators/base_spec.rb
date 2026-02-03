@@ -35,6 +35,12 @@ RSpec.describe Moduloproject::Generators::Base do
       generator = described_class.new(context)
       expect(generator.version).to eq(1)
     end
+
+    it 'returns 1 when VERSION constant is not defined' do
+      generator = described_class.new(context)
+      allow(generator.class).to receive(:const_get).with(:VERSION).and_raise(NameError)
+      expect(generator.version).to eq(1)
+    end
   end
 
   describe 'protected methods' do
@@ -97,6 +103,43 @@ RSpec.describe Moduloproject::Generators::Base do
     describe '#project_root' do
       it 'returns context project root' do
         expect(generator.send(:project_root)).to eq(project_root)
+      end
+    end
+
+    describe '#log_action' do
+      it 'does nothing when verbose is false' do
+        allow(generator).to receive(:puts)
+        generator.send(:log_action, 'create', 'test.txt')
+        expect(generator).not_to have_received(:puts)
+      end
+
+      context 'when verbose is true' do
+        let(:verbose_generator) { described_class.new(context, verbose: true) }
+
+        it 'calls puts with formatted output' do
+          allow(verbose_generator).to receive(:puts).and_return('output')
+          result = verbose_generator.send(:log_action, 'create', 'test.txt')
+          expect(verbose_generator).to have_received(:puts).with('  create       test.txt')
+          expect(result).to eq('output')
+        end
+      end
+    end
+
+    describe '#copy_file' do
+      let(:templates_root) { Moduloproject::TemplateEngine.templates_root }
+      let(:source_path) { 'docker/dockerignore.erb' }
+
+      it 'copies a file from templates to project' do
+        generator.send(:copy_file, source_path, '.dockerignore')
+        target_path = File.join(project_root, '.dockerignore')
+        expect(File.exist?(target_path)).to be true
+      end
+
+      it 'preserves file content' do
+        generator.send(:copy_file, source_path, '.dockerignore')
+        target_path = File.join(project_root, '.dockerignore')
+        source_full_path = File.join(templates_root, 'rails-8.1', source_path)
+        expect(File.read(target_path)).to eq(File.read(source_full_path))
       end
     end
 

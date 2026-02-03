@@ -120,6 +120,18 @@ RSpec.describe Moduloproject::Context do
     end
   end
 
+  describe '#importmap?' do
+    it 'returns true for importmap engine' do
+      context = described_class.new(js_engine: :importmap)
+      expect(context.importmap?).to be true
+    end
+
+    it 'returns false for other engines' do
+      context = described_class.new(js_engine: :bun)
+      expect(context.importmap?).to be false
+    end
+  end
+
   describe '#rails_version_gte?' do
     subject(:context) { described_class.new(rails_version: '8.0.0') }
 

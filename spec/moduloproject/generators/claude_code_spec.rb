@@ -78,4 +78,19 @@ RSpec.describe Moduloproject::Generators::ClaudeCode do
       expect(content).to include('Bun')
     end
   end
+
+  describe 'when skip_generation? returns true' do
+    let(:generator_without_force) { described_class.new(context) }
+
+    before do
+      keepfile_path = File.join(project_root, '.moduloproject.yml')
+      File.write(keepfile_path, { 'claude_code' => { 'version' => 1 } }.to_yaml)
+    end
+
+    it 'returns GENERATED_FILES without creating files' do
+      result = generator_without_force.generate
+      expect(result).to eq(described_class::GENERATED_FILES)
+      expect(File.exist?(File.join(project_root, '.claude/settings.json'))).to be false
+    end
+  end
 end
