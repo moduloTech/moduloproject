@@ -82,7 +82,7 @@ module Moduloproject
       # @param options [Hash] Options (force: overwrite existing, executable: set execute permission)
       # @return [String] The absolute path to the copied file
       def copy_file(source_path, destination_path, options = {})
-        full_source = File.join(TemplateEngine.templates_root, TemplateEngine.default_version, source_path)
+        full_source = TemplateEngine.resolve_static_path(source_path, context.rails_version)
         content = File.read(full_source)
         write_file(destination_path, content, options)
       end

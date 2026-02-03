@@ -1,0 +1,6 @@
+<%# Partial for database client packages in Dockerfiles %>
+<%- if mysql? -%>
+    mysql-client
+<%- else -%>
+    postgresql-client
+<%- end -%>

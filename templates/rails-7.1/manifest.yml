@@ -1,0 +1,13 @@
+# Rails 7.1 - Inherits from Rails 8.0
+# Override templates only when Rails 7.1 requires different behavior.
+
+inherits_from: rails-8.0
+
+variables:
+  # Rails 7.1 still uses Sprockets by default
+  use_propshaft: false
+
+overrides: []
+  # List templates that are explicitly overridden in this version
+  # Example:
+  # - docker/Dockerfile.prod.erb

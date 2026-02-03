@@ -1,0 +1,14 @@
+# Rails 8.1 - Reference version (no inheritance)
+# This is the base version that all other versions inherit from.
+
+variables:
+  # Ruby version defaults
+  default_ruby_version: "3.3.0"
+
+  # Docker base image
+  docker_base_image: "ruby"
+  docker_base_variant: "alpine"
+
+  # Asset pipeline settings
+  use_propshaft: true
+  use_importmap: true

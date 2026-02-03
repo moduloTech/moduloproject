@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
-require 'erb'
+require_relative 'template_engine/manifest'
+require_relative 'template_engine/inheritance_chain'
+require_relative 'template_engine/loader'
+require_relative 'template_engine/renderer'
 
 module Moduloproject
-  # TemplateEngine handles loading and rendering ERB templates.
-  # This is a minimal stub that will be enhanced in Phase 3.
+  # TemplateEngine is a facade for template loading and rendering.
+  # It provides a unified API while delegating to specialized components:
+  # - Loader: resolves template paths through inheritance chain
+  # - Renderer: handles ERB rendering with context binding
+  # - Manifest: parses version manifest.yml files
+  # - InheritanceChain: builds version inheritance chains
   class TemplateEngine
     class TemplateNotFoundError < StandardError; end
 
@@ -15,11 +22,11 @@ module Moduloproject
       # @param context [Context] The context object with project data
       # @return [String] The rendered template content
       def load(template_path, context)
-        full_path = resolve_template_path(template_path)
-        raise TemplateNotFoundError, "Template not found: #{template_path}" unless File.exist?(full_path)
-
-        template_content = File.read(full_path)
-        render(template_content, context)
+        rails_version = context.rails_version
+        content = loader.load(template_path, rails_version)
+        render(content, context)
+      rescue Loader::TemplateNotFoundError => e
+        raise TemplateNotFoundError, e.message
       end
 
       # Render ERB template content with the given context
@@ -28,80 +35,72 @@ module Moduloproject
       # @param context [Context] The context object with project data
       # @return [String] The rendered content
       def render(content, context)
-        binding_context = TemplateBinding.new(context)
-        erb = ERB.new(content, trim_mode: '-')
-        erb.result(binding_context.binding_for_erb)
+        renderer.render(content, context, loader: loader_for_context(context))
       end
 
       # Get the templates root directory
       #
       # @return [String] Path to templates directory
       def templates_root
-        File.expand_path('../../templates', __dir__)
+        @templates_root ||= File.expand_path('../../templates', __dir__)
       end
 
       # Get the default Rails version directory
       #
       # @return [String] Default version like 'rails-8.1'
       def default_version
-        'rails-8.1'
+        loader.default_version
+      end
+
+      # Resolve the full path to a static file for copy_file
+      #
+      # @param source_path [String] Relative path to static file
+      # @param rails_version [String] Rails version (e.g., '8.1.0' or 'rails-8.1')
+      # @return [String] Full path to file
+      # @raise [TemplateNotFoundError] If file not found in chain or shared
+      def resolve_static_path(source_path, rails_version)
+        full_path = loader.resolve_static_path(source_path, rails_version)
+        raise TemplateNotFoundError, "Static file not found: #{source_path}" unless full_path
+
+        full_path
+      end
+
+      # Get the inheritance chain for a version
+      #
+      # @param rails_version [String] Rails version
+      # @return [InheritanceChain] The inheritance chain
+      def inheritance_chain_for(rails_version)
+        loader.inheritance_chain_for(rails_version)
+      end
+
+      # Normalize a version string to a directory name
+      #
+      # @param version [String] Version string or directory name
+      # @return [String] Normalized directory name
+      def normalize_version(version)
+        loader.normalize_version(version)
+      end
+
+      # Reset cached instances (useful for testing)
+      def reset!
+        @loader = nil
+        @renderer = nil
+        @templates_root = nil
       end
 
       private
 
-      def resolve_template_path(template_path)
-        # Try versioned path first
-        versioned_path = File.join(templates_root, default_version, template_path)
-        return versioned_path if File.exist?(versioned_path)
-
-        # Fall back to direct path
-        File.join(templates_root, template_path)
-      end
-    end
-
-    # Internal class that provides the binding for ERB templates
-    class TemplateBinding
-      def initialize(context)
-        @context = context
-        expose_attribute_methods
-        expose_helper_methods
-        set_legacy_instance_variables
+      def loader
+        @loader ||= Loader.new(templates_root)
       end
 
-      def binding_for_erb
-        binding
+      def renderer
+        @renderer ||= Renderer.new
       end
 
-      private
-
-      def expose_attribute_methods
-        context = @context
-        Context::ATTRIBUTE_KEYS.each do |key|
-          define_singleton_method(key) { context.send(key) }
-        end
-      end
-
-      def expose_helper_methods
-        context = @context
-        define_singleton_method(:mysql?) { context.mysql? }
-        define_singleton_method(:postgresql?) { context.postgresql? }
-        define_singleton_method(:webpacker?) { context.webpacker? }
-        define_singleton_method(:bun?) { context.bun? }
-        define_singleton_method(:importmap?) { context.importmap? }
-        define_singleton_method(:rails_version_gte?) { |v| context.rails_version_gte?(v) }
-      end
-
-      def set_legacy_instance_variables
-        # Legacy compatibility - templates use @data.field syntax
-        @data = @context
-        @adapter = @context.adapter
-        @js_engine = @context.js_engine
-        @image_name = @context.image_name
-        @environment_name = @context.environment_name
-        @review_base_url = @context.review_base_url
-        @staging_url = @context.staging_url
-        @production_url = @context.production_url
-        @rails_72_and_more = @context.rails_version_gte?('7.2')
+      def loader_for_context(context)
+        # Create a loader scoped to the context's version for partials
+        Loader.new(templates_root)
       end
     end
   end

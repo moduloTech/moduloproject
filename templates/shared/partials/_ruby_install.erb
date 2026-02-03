@@ -1,0 +1,8 @@
+<%# Partial for Ruby installation in Dockerfiles %>
+# Install Ruby runtime dependencies
+RUN apk add --update --no-cache \
+    tzdata \
+    shared-mime-info \
+    vim \
+    jemalloc \
+    vips

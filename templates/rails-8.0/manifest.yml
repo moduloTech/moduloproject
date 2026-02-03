@@ -1,0 +1,12 @@
+# Rails 8.0 - Inherits from Rails 8.1
+# Override templates only when Rails 8.0 requires different behavior.
+
+inherits_from: rails-8.1
+
+variables:
+  # No variable overrides needed for 8.0
+
+overrides: []
+  # List templates that are explicitly overridden in this version
+  # Example:
+  # - docker/Dockerfile.prod.erb

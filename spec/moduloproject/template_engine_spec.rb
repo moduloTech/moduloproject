@@ -10,6 +10,10 @@ RSpec.describe Moduloproject::TemplateEngine do
     )
   end
 
+  after do
+    described_class.reset!
+  end
+
   describe '.load' do
     it 'loads and renders a template' do
       content = described_class.load('docker/dockerignore.erb', context)
@@ -20,6 +24,36 @@ RSpec.describe Moduloproject::TemplateEngine do
     it 'raises TemplateNotFoundError for missing template' do
       expect { described_class.load('nonexistent/template.erb', context) }
         .to raise_error(Moduloproject::TemplateEngine::TemplateNotFoundError, /Template not found/)
+    end
+
+    context 'with version inheritance' do
+      let(:context_71) do
+        Moduloproject::Context.new(
+          project_root: '/tmp/test',
+          project_name: 'test-app',
+          ruby_version: '3.3.0',
+          rails_version: '7.1.0'
+        )
+      end
+
+      let(:context_80) do
+        Moduloproject::Context.new(
+          project_root: '/tmp/test',
+          project_name: 'test-app',
+          ruby_version: '3.3.0',
+          rails_version: '8.0.0'
+        )
+      end
+
+      it 'loads template for Rails 7.1 through inheritance chain' do
+        content = described_class.load('docker/Dockerfile.prod.erb', context_71)
+        expect(content).to include('FROM docker.io/library/ruby')
+      end
+
+      it 'loads template for Rails 8.0 through inheritance chain' do
+        content = described_class.load('docker/Dockerfile.prod.erb', context_80)
+        expect(content).to include('FROM docker.io/library/ruby')
+      end
     end
   end
 
@@ -56,19 +90,78 @@ RSpec.describe Moduloproject::TemplateEngine do
     end
   end
 
-  describe Moduloproject::TemplateEngine::TemplateBinding do
-    let(:binding_instance) { described_class.new(context) }
-
-    it 'exposes context attributes as methods' do
-      erb_binding = binding_instance.binding_for_erb
-      expect(erb_binding.eval('project_name')).to eq('test-app')
-      expect(erb_binding.eval('ruby_version')).to eq('3.3.0')
+  describe '.resolve_static_path' do
+    it 'resolves static file path for rails-8.1' do
+      path = described_class.resolve_static_path('docker/Dockerfile.prod.erb', '8.1.0')
+      expect(path).to end_with('rails-8.1/docker/Dockerfile.prod.erb')
+      expect(File.exist?(path)).to be true
     end
 
-    it 'sets legacy instance variables' do
-      erb_binding = binding_instance.binding_for_erb
-      expect(erb_binding.eval('@data')).to eq(context)
-      expect(erb_binding.eval('@adapter')).to eq('postgresql')
+    it 'resolves static file path through inheritance chain' do
+      path = described_class.resolve_static_path('docker/Dockerfile.prod.erb', '7.1.0')
+      expect(path).to end_with('rails-8.1/docker/Dockerfile.prod.erb')
     end
+
+    it 'raises TemplateNotFoundError for missing file' do
+      expect { described_class.resolve_static_path('nonexistent/file.txt', '8.1.0') }
+        .to raise_error(Moduloproject::TemplateEngine::TemplateNotFoundError, /Static file not found/)
+    end
+  end
+
+  describe '.inheritance_chain_for' do
+    it 'returns inheritance chain for Rails 7.1' do
+      chain = described_class.inheritance_chain_for('7.1.0')
+      expect(chain.versions).to eq(%w[rails-7.1 rails-8.0 rails-8.1])
+    end
+
+    it 'returns inheritance chain for Rails 8.1' do
+      chain = described_class.inheritance_chain_for('8.1.0')
+      expect(chain.versions).to eq(['rails-8.1'])
+    end
+  end
+
+  describe '.normalize_version' do
+    it 'normalizes version strings' do
+      expect(described_class.normalize_version('8.1.0')).to eq('rails-8.1')
+      expect(described_class.normalize_version('7.1.3')).to eq('rails-7.1')
+      expect(described_class.normalize_version('rails-8.0')).to eq('rails-8.0')
+    end
+  end
+
+  describe '.reset!' do
+    it 'clears cached instances' do
+      # Access to initialize caches
+      described_class.templates_root
+      described_class.default_version
+
+      # Reset should not raise
+      expect { described_class.reset! }.not_to raise_error
+    end
+  end
+
+end
+
+RSpec.describe Moduloproject::TemplateEngine::TemplateBinding do
+  let(:context) do
+    Moduloproject::Context.new(
+      project_root: '/tmp/test',
+      project_name: 'test-app',
+      ruby_version: '3.3.0',
+      rails_version: '8.1.0'
+    )
+  end
+
+  let(:binding_instance) { described_class.new(context) }
+
+  it 'exposes context attributes as methods' do
+    erb_binding = binding_instance.binding_for_erb
+    expect(erb_binding.eval('project_name')).to eq('test-app')
+    expect(erb_binding.eval('ruby_version')).to eq('3.3.0')
+  end
+
+  it 'sets legacy instance variables' do
+    erb_binding = binding_instance.binding_for_erb
+    expect(erb_binding.eval('@data')).to eq(context)
+    expect(erb_binding.eval('@adapter')).to eq('postgresql')
   end
 end
