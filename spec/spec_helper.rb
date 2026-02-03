@@ -1,5 +1,25 @@
 # frozen_string_literal: true
 
+require 'simplecov'
+require 'simplecov-lcov'
+require 'simplecov_json_formatter'
+
+SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,  # dev local
+  SimpleCov::Formatter::LcovFormatter,  # GitHub/CI
+  SimpleCov::Formatter::JSONFormatter   # Claude Code
+])
+
+SimpleCov.start do
+  add_filter '/spec/'
+  add_group 'Generators', 'lib/moduloproject/generators'
+  add_group 'Core', 'lib/moduloproject'
+  enable_coverage :branch
+  minimum_coverage 90
+end
+
 require 'bundler/setup'
 require 'fileutils'
 require 'tmpdir'
