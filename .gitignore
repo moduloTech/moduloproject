@@ -1,1 +1,28 @@
-.idea
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+
+# Ruby gem artifacts
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/tmp/
+
+# Gem build artifacts
+*.gem
+
+# RSpec persistence
+.rspec_status
+
+# macOS
+.DS_Store
+
+# Claude code
+.claude/settings.local.json

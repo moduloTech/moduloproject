@@ -1,0 +1,38 @@
+plugins:
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.2
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'spec/examples.txt'
+    - 'moduloproject-legacy.sh'
+    - 'template.rb'
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 25
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/MultipleExpectations:
+  Max: 3
+
+RSpec/NestedGroups:
+  Max: 4
