@@ -56,12 +56,42 @@ RSpec.describe Moduloproject::CLI do
   end
 
   describe 'new command' do
-    it 'displays not implemented message' do
-      expect { described_class.start(%w[new test-app]) }.to output(/Not implemented yet/).to_stdout
+    before do
+      allow(Moduloproject::Commands::New).to receive(:new).and_return(
+        instance_double(Moduloproject::Commands::New, execute: nil)
+      )
     end
 
-    it 'displays the app name' do
-      expect { described_class.start(%w[new my-app]) }.to output(/Creating new project: my-app/).to_stdout
+    it 'shows supported Rails versions in help' do
+      expect { described_class.start(%w[help new]) }.to output(/default: 8\.1, supported: 7\.2, 8\.0, 8\.1/).to_stdout
+    end
+
+    it 'creates a Commands::New instance with correct arguments' do
+      expect(Moduloproject::Commands::New).to receive(:new).with(
+        'test-app',
+        hash_including('frontend' => 'vue')
+      )
+      described_class.start(%w[new test-app])
+    end
+
+    it 'passes custom options' do
+      expect(Moduloproject::Commands::New).to receive(:new).with(
+        'my-app',
+        hash_including('frontend' => 'hotwire')
+      )
+      described_class.start(%w[new my-app --frontend hotwire])
+    end
+
+    context 'when ArgumentError is raised' do
+      before do
+        allow(Moduloproject::Commands::New).to receive(:new).and_raise(ArgumentError, 'Invalid name')
+      end
+
+      it 'displays error and exits' do
+        expect do
+          described_class.start(%w[new test-app])
+        end.to raise_error(SystemExit)
+      end
     end
   end
 

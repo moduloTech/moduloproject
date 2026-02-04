@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 RSpec.describe Moduloproject::TemplateEngine::Renderer do
+  subject { described_class.new }
+
   let(:context) do
     Moduloproject::Context.new(
       project_root: '/tmp/test',
@@ -10,8 +12,6 @@ RSpec.describe Moduloproject::TemplateEngine::Renderer do
       adapter: 'postgresql'
     )
   end
-
-  subject { described_class.new }
 
   describe '#render' do
     it 'renders ERB content with context' do
@@ -88,9 +88,46 @@ RSpec.describe Moduloproject::TemplateEngine::TemplateBinding do
       erb_binding = binding_instance.binding_for_erb
       expect(erb_binding.eval('postgresql?')).to be true
       expect(erb_binding.eval('mysql?')).to be false
+      expect(erb_binding.eval('sqlite3?')).to be false
       expect(erb_binding.eval('importmap?')).to be true
       expect(erb_binding.eval('webpacker?')).to be false
       expect(erb_binding.eval('bun?')).to be false
+      expect(erb_binding.eval('vue?')).to be false
+      expect(erb_binding.eval('hotwire?')).to be false
+    end
+
+    context 'with vue frontend' do
+      let(:vue_context) do
+        Moduloproject::Context.new(
+          project_root: '/tmp/test',
+          project_name: 'test-app',
+          frontend: 'vue'
+        )
+      end
+      let(:vue_binding) { described_class.new(vue_context) }
+
+      it 'exposes vue? as true' do
+        erb_binding = vue_binding.binding_for_erb
+        expect(erb_binding.eval('vue?')).to be true
+        expect(erb_binding.eval('hotwire?')).to be false
+      end
+    end
+
+    context 'with hotwire frontend' do
+      let(:hotwire_context) do
+        Moduloproject::Context.new(
+          project_root: '/tmp/test',
+          project_name: 'test-app',
+          frontend: 'hotwire'
+        )
+      end
+      let(:hotwire_binding) { described_class.new(hotwire_context) }
+
+      it 'exposes hotwire? as true' do
+        erb_binding = hotwire_binding.binding_for_erb
+        expect(erb_binding.eval('hotwire?')).to be true
+        expect(erb_binding.eval('vue?')).to be false
+      end
     end
 
     it 'exposes rails_version_gte?' do
@@ -145,6 +182,26 @@ RSpec.describe Moduloproject::TemplateEngine::TemplateBinding do
         result = mysql_binding.partial('database_packages')
         expect(result).to include('mysql-client')
         expect(result).not_to include('postgresql-client')
+      end
+    end
+
+    context 'with SQLite3 adapter' do
+      let(:sqlite3_context) do
+        Moduloproject::Context.new(
+          project_root: '/tmp/test',
+          project_name: 'test-app',
+          ruby_version: '3.3.0',
+          rails_version: '8.1.0',
+          adapter: 'sqlite3'
+        )
+      end
+      let(:sqlite3_binding) { described_class.new(sqlite3_context, loader: loader) }
+
+      it 'renders partial with SQLite packages' do
+        result = sqlite3_binding.partial('database_packages')
+        expect(result).to include('sqlite')
+        expect(result).not_to include('postgresql-client')
+        expect(result).not_to include('mysql-client')
       end
     end
   end

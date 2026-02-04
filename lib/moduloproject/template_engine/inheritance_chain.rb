@@ -5,13 +5,13 @@ require_relative 'manifest'
 module Moduloproject
   class TemplateEngine
     # InheritanceChain builds the version inheritance chain.
-    # For example: rails-7.1 -> rails-8.0 -> rails-8.1 (reference)
+    # For example: rails-7.2 -> rails-8.0 -> rails-8.1 (reference)
     class InheritanceChain
       class CircularInheritanceError < StandardError; end
 
       attr_reader :chain, :templates_root
 
-      # @param starting_version [String] The starting version (e.g., 'rails-7.1')
+      # @param starting_version [String] The starting version (e.g., 'rails-7.2')
       # @param templates_root [String] Path to templates directory
       def initialize(starting_version, templates_root)
         @starting_version = starting_version

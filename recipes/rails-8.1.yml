@@ -1,0 +1,48 @@
+compatibility:
+  ruby_minimum: "3.2"
+  ruby_maximum: ~
+  ruby_default: "4"
+
+rails_options:
+  common:
+    - "--database=<database>"
+    - "--skip-test"
+    - "--skip-system-test"
+    - "--skip-docker"
+  frontend:
+    vue:
+      - "--skip-javascript"
+    hotwire:
+      - "--javascript=importmap"
+      - "--css=bootstrap"
+
+supports_skip_solid: true
+
+backend_defaults:
+  active_job: sidekiq
+  action_cable: redis
+  rails_cache: redis
+
+available_backends:
+  active_job:
+    - sidekiq
+    - solid_queue
+  action_cable:
+    - redis
+    - solid_cable
+  rails_cache:
+    - redis
+    - solid_cache
+
+solid_backend_gems:
+  solid_queue: solid_queue
+  solid_cable: solid_cable
+  solid_cache: solid_cache
+
+solid_files:
+  - config/cache.yml
+  - config/queue.yml
+  - config/recurring.yml
+  - db/cache_schema.rb
+  - db/queue_schema.rb
+  - db/cable_schema.rb

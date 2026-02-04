@@ -11,7 +11,6 @@ module Moduloproject
         config/database.yml
         config/cable.yml
         config/puma.rb
-        config/initializers/0_redis.rb
       ].freeze
 
       # Generate application configuration files
@@ -25,7 +24,6 @@ module Moduloproject
         generated << create_database_config
         generated << create_cable_config
         generated << create_puma_config
-        generated << create_redis_initializer
 
         update_keepfile
         generated.compact
@@ -34,8 +32,10 @@ module Moduloproject
       private
 
       def create_database_config
+        return if context.sqlite3?
+
         content = render_template('config/database.yml.erb')
-        write_file('config/database.yml', content, force: options[:force])
+        write_file('config/database.yml', content, force: true)
       end
 
       def create_cable_config
@@ -46,11 +46,6 @@ module Moduloproject
       def create_puma_config
         content = render_template('config/puma.rb.erb')
         write_file('config/puma.rb', content, force: options[:force])
-      end
-
-      def create_redis_initializer
-        content = render_template('config/initializers/0_redis.rb.erb')
-        write_file('config/initializers/0_redis.rb', content, force: options[:force])
       end
     end
   end

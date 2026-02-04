@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 RSpec.describe Moduloproject::TemplateEngine::Loader do
-  let(:templates_root) { Moduloproject::TemplateEngine.templates_root }
   subject { described_class.new(templates_root) }
+
+  let(:templates_root) { Moduloproject::TemplateEngine.templates_root }
 
   describe '#load' do
     it 'loads template from rails-8.1' do
@@ -11,9 +12,9 @@ RSpec.describe Moduloproject::TemplateEngine::Loader do
     end
 
     it 'resolves template through inheritance chain' do
-      # rails-7.1 inherits from rails-8.0 which inherits from rails-8.1
+      # rails-7.2 inherits from rails-8.0 which inherits from rails-8.1
       # Template should be found in rails-8.1
-      content = subject.load('docker/Dockerfile.prod.erb', '7.1.0')
+      content = subject.load('docker/Dockerfile.prod.erb', '7.2.0')
       expect(content).to include('FROM docker.io/library/ruby')
     end
 
@@ -43,7 +44,7 @@ RSpec.describe Moduloproject::TemplateEngine::Loader do
     end
 
     it 'resolves through inheritance chain' do
-      path = subject.resolve_path('docker/Dockerfile.prod.erb', '7.1.0')
+      path = subject.resolve_path('docker/Dockerfile.prod.erb', '7.2.0')
       expect(path).to end_with('rails-8.1/docker/Dockerfile.prod.erb')
     end
 
@@ -83,12 +84,12 @@ RSpec.describe Moduloproject::TemplateEngine::Loader do
     it 'converts version string to directory name' do
       expect(subject.normalize_version('8.1.0')).to eq('rails-8.1')
       expect(subject.normalize_version('8.0.2')).to eq('rails-8.0')
-      expect(subject.normalize_version('7.1.3')).to eq('rails-7.1')
+      expect(subject.normalize_version('7.2.3')).to eq('rails-7.2')
     end
 
     it 'preserves already normalized versions' do
       expect(subject.normalize_version('rails-8.1')).to eq('rails-8.1')
-      expect(subject.normalize_version('rails-7.1')).to eq('rails-7.1')
+      expect(subject.normalize_version('rails-7.2')).to eq('rails-7.2')
     end
 
     it 'defaults to rails-8.1 for invalid versions' do
@@ -99,13 +100,13 @@ RSpec.describe Moduloproject::TemplateEngine::Loader do
 
   describe '#inheritance_chain_for' do
     it 'returns inheritance chain for version' do
-      chain = subject.inheritance_chain_for('7.1.0')
-      expect(chain.versions).to eq(%w[rails-7.1 rails-8.0 rails-8.1])
+      chain = subject.inheritance_chain_for('7.2.0')
+      expect(chain.versions).to eq(%w[rails-7.2 rails-8.0 rails-8.1])
     end
 
     it 'caches inheritance chains' do
-      chain1 = subject.inheritance_chain_for('7.1.0')
-      chain2 = subject.inheritance_chain_for('7.1.0')
+      chain1 = subject.inheritance_chain_for('7.2.0')
+      chain2 = subject.inheritance_chain_for('7.2.0')
       expect(chain1).to be(chain2)
     end
   end

@@ -1,0 +1,15 @@
+CI.run do
+  step "Setup", "bin/setup --skip-server"
+  step "Tests", "bin/test"
+  step "Seeds", "bin/rails db:drop db:create db:schema:load db:seed"
+  <%- if vue? -%>
+  step "Vitest", "npm run test"
+  <%- end -%>
+  step "Style: Ruby", "bin/rubocop"
+  step "Style: Ruby (light)", "rubocop --except Metrics/PerceivedComplexity,Metrics/CyclomaticComplexity,Metrics/BlockLength,Metrics/AbcSize,Metrics/MethodLength,Metrics/ParameterLists,Metrics/ModuleLength"
+  <%- if vue? -%>
+  step "Style: JS", "npm run lint"
+  <%- end -%>
+  step "Security: Gem audit", "bin/bundler-audit"
+  step "Security: Brakeman", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+end

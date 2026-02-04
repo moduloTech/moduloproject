@@ -12,11 +12,13 @@ module Moduloproject
       bundler_version
       adapter
       js_engine
+      frontend
       image_name
       environment_name
       production_url
       staging_url
       review_base_url
+      uses_redis
     ].freeze
 
     attr_reader(*ATTRIBUTE_KEYS)
@@ -37,7 +39,11 @@ module Moduloproject
     end
 
     def postgresql?
-      !mysql?
+      adapter.to_s.match?(/postgres/i)
+    end
+
+    def sqlite3?
+      adapter.to_s.match?(/sqlite/i)
     end
 
     def webpacker?
@@ -50,6 +56,14 @@ module Moduloproject
 
     def importmap?
       js_engine == :importmap
+    end
+
+    def vue?
+      frontend.to_s == 'vue'
+    end
+
+    def hotwire?
+      frontend.to_s == 'hotwire'
     end
 
     def rails_version_gte?(version)
@@ -72,8 +86,10 @@ module Moduloproject
     def initialize_project_settings(attributes)
       @adapter = attributes[:adapter] || 'postgresql'
       @js_engine = attributes[:js_engine] || :importmap
+      @frontend = attributes[:frontend]
       @image_name = attributes[:image_name] || parameterize(@project_name)
       @environment_name = attributes[:environment_name] || build_environment_name(@project_name)
+      @uses_redis = attributes.fetch(:uses_redis, true)
     end
 
     def initialize_urls(attributes)

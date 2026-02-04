@@ -41,8 +41,8 @@ RSpec.describe Moduloproject::TemplateEngine::Manifest do
       end
     end
 
-    context 'with rails-7.1 (inherits from 8.0)' do
-      subject { described_class.new('rails-7.1', templates_root) }
+    context 'with rails-7.2 (inherits from 8.0)' do
+      subject { described_class.new('rails-7.2', templates_root) }
 
       it 'inherits from rails-8.0' do
         expect(subject.inherits_from).to eq('rails-8.0')
@@ -125,7 +125,7 @@ RSpec.describe Moduloproject::TemplateEngine::Manifest do
       FileUtils.mkdir_p(File.join(temp_root, 'rails-broken'))
       File.write(
         File.join(temp_root, 'rails-broken', 'manifest.yml'),
-        "invalid: yaml: content: {"
+        'invalid: yaml: content: {'
       )
 
       expect { described_class.new('rails-broken', temp_root) }

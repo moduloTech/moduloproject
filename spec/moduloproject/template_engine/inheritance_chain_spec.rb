@@ -4,15 +4,15 @@ RSpec.describe Moduloproject::TemplateEngine::InheritanceChain do
   let(:templates_root) { Moduloproject::TemplateEngine.templates_root }
 
   describe '#initialize' do
-    context 'with rails-7.1' do
-      subject { described_class.new('rails-7.1', templates_root) }
+    context 'with rails-7.2' do
+      subject { described_class.new('rails-7.2', templates_root) }
 
       it 'builds the full inheritance chain' do
-        expect(subject.versions).to eq(%w[rails-7.1 rails-8.0 rails-8.1])
+        expect(subject.versions).to eq(%w[rails-7.2 rails-8.0 rails-8.1])
       end
 
       it 'includes all versions in the chain' do
-        expect(subject.include?('rails-7.1')).to be true
+        expect(subject.include?('rails-7.2')).to be true
         expect(subject.include?('rails-8.0')).to be true
         expect(subject.include?('rails-8.1')).to be true
       end
@@ -44,8 +44,8 @@ RSpec.describe Moduloproject::TemplateEngine::InheritanceChain do
   end
 
   describe '#merged_variables' do
-    context 'with rails-7.1' do
-      subject { described_class.new('rails-7.1', templates_root) }
+    context 'with rails-7.2' do
+      subject { described_class.new('rails-7.2', templates_root) }
 
       it 'merges variables from all manifests' do
         vars = subject.merged_variables
@@ -54,7 +54,7 @@ RSpec.describe Moduloproject::TemplateEngine::InheritanceChain do
 
       it 'child variables override parent variables' do
         vars = subject.merged_variables
-        # rails-7.1 overrides use_propshaft to false
+        # rails-7.2 overrides use_propshaft to false
         expect(vars['use_propshaft']).to be false
       end
     end
@@ -122,11 +122,11 @@ RSpec.describe Moduloproject::TemplateEngine::InheritanceChain do
 
       File.write(
         File.join(temp_root, 'rails-a', 'manifest.yml'),
-        "inherits_from: rails-b"
+        'inherits_from: rails-b'
       )
       File.write(
         File.join(temp_root, 'rails-b', 'manifest.yml'),
-        "inherits_from: rails-a"
+        'inherits_from: rails-a'
       )
 
       expect { described_class.new('rails-a', temp_root) }

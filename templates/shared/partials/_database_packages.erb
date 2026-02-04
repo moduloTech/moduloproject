@@ -1,6 +1,8 @@
 <%# Partial for database client packages in Dockerfiles %>
 <%- if mysql? -%>
     mysql-client
+<%- elsif sqlite3? -%>
+    sqlite
 <%- else -%>
     postgresql-client
 <%- end -%>

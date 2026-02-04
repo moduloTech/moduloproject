@@ -7,6 +7,7 @@ WORKDIR /rails
 RUN apk add --update --no-cache \
     alpine-sdk \
     nodejs \
+    npm \
     tzdata \
     gcompat \
     vim \
@@ -16,9 +17,12 @@ RUN apk add --update --no-cache \
     curl \
 <%- if mysql? -%>
     mysql-dev
+<%- elsif sqlite3? -%>
+    sqlite-dev
 <%- else -%>
     postgresql-dev
 <%- end -%>
+RUN git config --global --add safe.directory /rails
 RUN gem install bundler -v <%= bundler_version %>
 
 <%- if webpacker? -%>

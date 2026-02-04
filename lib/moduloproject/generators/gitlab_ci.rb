@@ -5,7 +5,7 @@ module Moduloproject
     # GitLab CI generator creates .gitlab-ci.yml and bin/test script.
     # Migrated from Modulorails::GitlabciGenerator.
     class GitlabCi < Base
-      VERSION = 2
+      VERSION = 3
 
       GENERATED_FILES = %w[
         .gitlab-ci.yml
@@ -22,6 +22,7 @@ module Moduloproject
 
         generated << create_gitlab_ci
         generated << create_test_script
+        generated << create_ci_runner
         generated += create_deploy_configs
 
         update_keepfile
@@ -38,6 +39,16 @@ module Moduloproject
       def create_test_script
         content = render_template('ci/bin_test.sh.erb')
         write_file('bin/test', content, force: options[:force], executable: true)
+      end
+
+      def create_ci_runner
+        if context.rails_version_gte?('8.1')
+          content = render_template('ci/config_ci.rb.erb')
+          write_file('config/ci.rb', content, force: true)
+        else
+          content = render_template('ci/bin_ci.rb.erb')
+          write_file('bin/ci', content, force: options[:force], executable: true)
+        end
       end
 
       def create_deploy_configs

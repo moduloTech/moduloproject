@@ -19,6 +19,8 @@ RUN apk add --update --no-cache \
     vips \
   <%- if mysql? -%>
     mysql-client
+  <%- elsif sqlite3? -%>
+    sqlite
   <%- else -%>
     postgresql-client
   <%- end -%>
@@ -44,6 +46,8 @@ RUN apk add --update --no-cache \
     bash \
   <%- if mysql? -%>
     mysql-dev
+  <%- elsif sqlite3? -%>
+    sqlite-dev
   <%- else -%>
     postgresql-dev
   <%- end -%>

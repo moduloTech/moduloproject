@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Phase 4: `new` command** - Create new Rails projects with Modulotech conventions
+  - Docker-based Rails generation (no local Ruby/Rails required)
+  - Modulorails gem auto-configuration
+  - Infrastructure generation (Docker, CI, devcontainer, git hooks, Claude Code)
+  - Git repository initialization
+  - CLI options: `--ruby`, `--rails`, `--database`, `--stack` (vue/hotwire), `--skip-docker`
+  - Input validation with friendly error messages
+
 ## [3.0.0] - 2025-02-02
 
 ### Added

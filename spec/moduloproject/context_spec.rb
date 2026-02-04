@@ -44,6 +44,7 @@ RSpec.describe Moduloproject::Context do
           rails_version: '7.2.0',
           adapter: 'mysql2',
           js_engine: :bun,
+          frontend: 'vue',
           production_url: 'myapp.com',
           staging_url: 'staging.myapp.com',
           review_base_url: 'review.myapp.com'
@@ -57,6 +58,7 @@ RSpec.describe Moduloproject::Context do
         expect(context.rails_version).to eq('7.2.0')
         expect(context.adapter).to eq('mysql2')
         expect(context.js_engine).to eq(:bun)
+        expect(context.frontend).to eq('vue')
         expect(context.production_url).to eq('myapp.com')
         expect(context.staging_url).to eq('staging.myapp.com')
         expect(context.review_base_url).to eq('review.myapp.com')
@@ -94,6 +96,28 @@ RSpec.describe Moduloproject::Context do
       context = described_class.new(adapter: 'postgresql')
       expect(context.postgresql?).to be true
     end
+
+    it 'returns false for sqlite3 adapter' do
+      context = described_class.new(adapter: 'sqlite3')
+      expect(context.postgresql?).to be false
+    end
+  end
+
+  describe '#sqlite3?' do
+    it 'returns true for sqlite3 adapter' do
+      context = described_class.new(adapter: 'sqlite3')
+      expect(context.sqlite3?).to be true
+    end
+
+    it 'returns false for postgresql adapter' do
+      context = described_class.new(adapter: 'postgresql')
+      expect(context.sqlite3?).to be false
+    end
+
+    it 'returns false for mysql adapter' do
+      context = described_class.new(adapter: 'mysql2')
+      expect(context.sqlite3?).to be false
+    end
   end
 
   describe '#webpacker?' do
@@ -129,6 +153,35 @@ RSpec.describe Moduloproject::Context do
     it 'returns false for other engines' do
       context = described_class.new(js_engine: :bun)
       expect(context.importmap?).to be false
+    end
+  end
+
+  describe '#vue?' do
+    it 'returns true for vue frontend' do
+      context = described_class.new(frontend: 'vue')
+      expect(context.vue?).to be true
+    end
+
+    it 'returns false for hotwire frontend' do
+      context = described_class.new(frontend: 'hotwire')
+      expect(context.vue?).to be false
+    end
+
+    it 'returns false for nil frontend' do
+      context = described_class.new
+      expect(context.vue?).to be false
+    end
+  end
+
+  describe '#hotwire?' do
+    it 'returns true for hotwire frontend' do
+      context = described_class.new(frontend: 'hotwire')
+      expect(context.hotwire?).to be true
+    end
+
+    it 'returns false for vue frontend' do
+      context = described_class.new(frontend: 'vue')
+      expect(context.hotwire?).to be false
     end
   end
 

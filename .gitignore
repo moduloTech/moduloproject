@@ -26,3 +26,6 @@
 
 # Claude code
 .claude/settings.local.json
+
+# Mise
+mise.toml

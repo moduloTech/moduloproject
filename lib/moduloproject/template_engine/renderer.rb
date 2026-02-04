@@ -59,9 +59,12 @@ module Moduloproject
         context = @context
         define_singleton_method(:mysql?) { context.mysql? }
         define_singleton_method(:postgresql?) { context.postgresql? }
+        define_singleton_method(:sqlite3?) { context.sqlite3? }
         define_singleton_method(:webpacker?) { context.webpacker? }
         define_singleton_method(:bun?) { context.bun? }
         define_singleton_method(:importmap?) { context.importmap? }
+        define_singleton_method(:vue?) { context.vue? }
+        define_singleton_method(:hotwire?) { context.hotwire? }
         define_singleton_method(:rails_version_gte?) { |v| context.rails_version_gte?(v) }
       end
 

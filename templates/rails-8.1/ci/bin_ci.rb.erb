@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+class CiRunner
+  def initialize
+    @steps = []
+    @results = []
+  end
+
+  def step(name, command)
+    @steps << { name: name, command: command }
+  end
+
+  def run
+    puts "Running CI pipeline (#{@steps.size} steps)...\n\n"
+
+    @steps.each_with_index do |step, index|
+      print "[#{index + 1}/#{@steps.size}] #{step[:name]}... "
+      success = system(step[:command])
+      status = success ? "PASS" : "FAIL"
+      puts status
+      @results << { name: step[:name], success: success }
+    end
+
+    puts "\n--- Results ---"
+    @results.each do |result|
+      icon = result[:success] ? "+" : "-"
+      puts "  [#{icon}] #{result[:name]}"
+    end
+
+    failures = @results.reject { |r| r[:success] }
+    if failures.empty?
+      puts "\nAll #{@results.size} steps passed."
+    else
+      puts "\n#{failures.size} of #{@results.size} steps failed."
+      exit 1
+    end
+  end
+end
+
+ci = CiRunner.new
+ci.step "Setup", "bin/setup --skip-server"
+ci.step "Tests", "bin/test"
+ci.step "Seeds", "bin/rails db:drop db:create db:schema:load db:seed"
+<%- if vue? -%>
+ci.step "Vitest", "npm run test"
+<%- end -%>
+ci.step "Style: Ruby", "bin/rubocop"
+ci.step "Style: Ruby (light)", "rubocop --except Metrics/PerceivedComplexity,Metrics/CyclomaticComplexity,Metrics/BlockLength,Metrics/AbcSize,Metrics/MethodLength,Metrics/ParameterLists,Metrics/ModuleLength"
+<%- if vue? -%>
+ci.step "Style: JS", "npm run lint"
+<%- end -%>
+ci.step "Security: Gem audit", "bin/bundler-audit"
+ci.step "Security: Brakeman", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+ci.run

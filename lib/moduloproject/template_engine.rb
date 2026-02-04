@@ -98,7 +98,7 @@ module Moduloproject
         @renderer ||= Renderer.new
       end
 
-      def loader_for_context(context)
+      def loader_for_context(_context)
         # Create a loader scoped to the context's version for partials
         Loader.new(templates_root)
       end

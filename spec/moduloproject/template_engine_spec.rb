@@ -32,7 +32,7 @@ RSpec.describe Moduloproject::TemplateEngine do
           project_root: '/tmp/test',
           project_name: 'test-app',
           ruby_version: '3.3.0',
-          rails_version: '7.1.0'
+          rails_version: '7.2.0'
         )
       end
 
@@ -45,7 +45,7 @@ RSpec.describe Moduloproject::TemplateEngine do
         )
       end
 
-      it 'loads template for Rails 7.1 through inheritance chain' do
+      it 'loads template for Rails 7.2 through inheritance chain' do
         content = described_class.load('docker/Dockerfile.prod.erb', context_71)
         expect(content).to include('FROM docker.io/library/ruby')
       end
@@ -98,7 +98,7 @@ RSpec.describe Moduloproject::TemplateEngine do
     end
 
     it 'resolves static file path through inheritance chain' do
-      path = described_class.resolve_static_path('docker/Dockerfile.prod.erb', '7.1.0')
+      path = described_class.resolve_static_path('docker/Dockerfile.prod.erb', '7.2.0')
       expect(path).to end_with('rails-8.1/docker/Dockerfile.prod.erb')
     end
 
@@ -109,9 +109,9 @@ RSpec.describe Moduloproject::TemplateEngine do
   end
 
   describe '.inheritance_chain_for' do
-    it 'returns inheritance chain for Rails 7.1' do
-      chain = described_class.inheritance_chain_for('7.1.0')
-      expect(chain.versions).to eq(%w[rails-7.1 rails-8.0 rails-8.1])
+    it 'returns inheritance chain for Rails 7.2' do
+      chain = described_class.inheritance_chain_for('7.2.0')
+      expect(chain.versions).to eq(%w[rails-7.2 rails-8.0 rails-8.1])
     end
 
     it 'returns inheritance chain for Rails 8.1' do
@@ -123,7 +123,7 @@ RSpec.describe Moduloproject::TemplateEngine do
   describe '.normalize_version' do
     it 'normalizes version strings' do
       expect(described_class.normalize_version('8.1.0')).to eq('rails-8.1')
-      expect(described_class.normalize_version('7.1.3')).to eq('rails-7.1')
+      expect(described_class.normalize_version('7.2.3')).to eq('rails-7.2')
       expect(described_class.normalize_version('rails-8.0')).to eq('rails-8.0')
     end
   end
@@ -138,7 +138,6 @@ RSpec.describe Moduloproject::TemplateEngine do
       expect { described_class.reset! }.not_to raise_error
     end
   end
-
 end
 
 RSpec.describe Moduloproject::TemplateEngine::TemplateBinding do

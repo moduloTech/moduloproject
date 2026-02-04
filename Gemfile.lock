@@ -37,6 +37,8 @@ GEM
     multi_xml (0.8.1)
       bigdecimal (>= 3.1, < 5)
     parallel (1.27.0)
+    parallel_tests (4.10.1)
+      parallel
     parser (3.3.10.1)
       ast (~> 2.4.1)
       racc
@@ -126,6 +128,7 @@ PLATFORMS
 
 DEPENDENCIES
   moduloproject!
+  parallel_tests (~> 4.7)
   rake (~> 13.3)
   rspec (~> 3.13)
   rubocop (~> 1.69)
@@ -154,6 +157,7 @@ CHECKSUMS
   moduloproject (3.0.0)
   multi_xml (0.8.1) sha256=addba0290bac34e9088bfe73dc4878530297a82a7bbd66cb44dcd0a4b86edf5a
   parallel (1.27.0) sha256=4ac151e1806b755fb4e2dc2332cbf0e54f2e24ba821ff2d3dcf86bf6dc4ae130
+  parallel_tests (4.10.1) sha256=df05458c691462b210f7a41fc2651d4e4e8a881e8190e6d1e122c92c07735d70
   parser (3.3.10.1) sha256=06f6a725d2cd91e5e7f2b7c32ba143631e1f7c8ae2fb918fc4cebec187e6a688
   pastel (0.8.0) sha256=481da9fb7d2f6e6b1a08faf11fa10363172dc40fd47848f096ae21209f805a75
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85

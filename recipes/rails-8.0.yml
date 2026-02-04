@@ -1,0 +1,15 @@
+inherits_from: rails-8.1
+
+compatibility:
+  ruby_minimum: "3.2"
+  ruby_maximum: "3.4"
+  ruby_default: "3.4"
+
+rails_options:
+  common:
+    - "--database=<database>"
+    - "--skip-test"
+    - "--skip-system-test"
+    - "--skip-docker"
+
+supports_skip_solid: true

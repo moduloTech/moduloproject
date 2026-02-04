@@ -53,7 +53,7 @@ module Moduloproject
       def load_manifest
         return unless exists?
 
-        content = YAML.safe_load(File.read(manifest_path), permitted_classes: [Symbol])
+        content = YAML.safe_load_file(manifest_path, permitted_classes: [Symbol])
         validate_manifest(content)
         parse_manifest(content)
       rescue Psych::SyntaxError => e

@@ -21,26 +21,87 @@ build_integration_image:
 test:
   extends: .test
   services:
-    <%- if mysql? -%>
-    - mysql:8-alpine
-    <%- else -%>
+    <%- if postgresql? -%>
     - postgres:16-alpine
+    - redis:7-alpine
+    <%- elsif mysql? -%>
+    - mysql:8-alpine
+    - redis:7-alpine
     <%- end -%>
     - redis:7-alpine
   variables:
     RAILS_ENV: test
-    <%- if mysql? -%>
-    MYSQL_DATABASE: <%= image_name %>-test
-    MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
-    DATABASE_TEST_URL: 'mysql2://root@mysql/<%= image_name %>-test'
-    <%- else -%>
+    <%- if postgresql? -%>
     POSTGRES_DB: <%= image_name %>-test
     POSTGRES_USER: postgres
     POSTGRES_PASSWORD: postgres
-    DATABASE_TEST_URL: 'postgresql://postgres:postgres@postgres/<%= image_name %>-test'
+    DATABASE_TEST_URL: postgresql://postgres:postgres@postgres/<%= image_name %>-test
+    <%- elsif mysql? -%>
+    MYSQL_DATABASE: <%= image_name %>-test
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    DATABASE_TEST_URL: mysql2://root@mysql/<%= image_name %>-test
     <%- end -%>
   script:
     - bin/test
+
+seeds:
+  extends: .test
+  services:
+    <%- if postgresql? -%>
+    - postgres:16-alpine
+    <%- elsif mysql? -%>
+    - mysql:8-alpine
+    <%- end -%>
+    - redis:7-alpine
+  variables:
+    RAILS_ENV: test
+    <%- if postgresql? -%>
+    POSTGRES_DB: <%= image_name %>-seeds
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+    DATABASE_TEST_URL: postgresql://postgres:postgres@postgres/<%= image_name %>-seeds
+    <%- elsif mysql? -%>
+    MYSQL_DATABASE: <%= image_name %>-seeds
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    DATABASE_TEST_URL: mysql2://root@mysql/<%= image_name %>-seeds
+    <%- end -%>
+  script:
+    - bin/rails db:drop db:create db:schema:load db:seed
+
+<%- if vue? -%>
+vitest:
+  extends: .test
+  before_script:
+    - rm -rf node_modules
+    - npm install
+  script:
+    - npm run test
+
+<%- end -%>
+rubocop:
+  extends: .lint
+
+rubocop_light:
+  extends: .lint
+  script:
+    - rubocop --except Metrics/PerceivedComplexity,Metrics/CyclomaticComplexity,Metrics/BlockLength,Metrics/AbcSize,Metrics/MethodLength,Metrics/ParameterLists,Metrics/ModuleLength
+  allow_failure: false
+
+<%- if vue? -%>
+eslint:
+  extends: .lint
+  before_script:
+    - npm install
+  script:
+    - npm run lint
+  allow_failure: false
+
+<%- end -%>
+bundleraudit:
+  extends: .bundleraudit
+
+brakeman:
+  extends: .ruby_brakeman
 
 docker_build:
   extends: .docker_buildx_push
