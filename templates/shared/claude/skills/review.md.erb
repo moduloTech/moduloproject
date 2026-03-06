@@ -1,0 +1,36 @@
+# Skill: Review
+
+Comprehensive review of recent changes or a specific merge request.
+
+## Steps
+
+1. Understand the scope of changes:
+   - `git log --oneline <%= default_branch %>..HEAD`
+   - `git diff <%= default_branch %>...HEAD --stat`
+2. Review each changed file for:
+   - Correctness and completeness
+   - Security vulnerabilities
+   - Performance implications
+   - Test coverage
+   - Code style and conventions
+3. Run automated checks:
+   - `<%= test_command %>`
+   - `bundle exec rubocop`
+   - `bundle exec brakeman -q`
+<%- if vue? -%>
+   - `npx eslint app/frontend`
+   - `npx vitest run`
+<%- end -%>
+
+## Output Format
+
+### Summary
+One paragraph describing the overall change.
+
+### Findings
+List each finding with severity and file reference.
+
+### Verdict
+- **Approve**: Ready to merge
+- **Request changes**: List required changes
+- **Comment**: Suggestions that don't block merge

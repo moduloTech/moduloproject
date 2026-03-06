@@ -48,7 +48,9 @@ require 'moduloproject/backends/rails_cache/solid_cache'
 require 'moduloproject/setup/active_job_setup'
 require 'moduloproject/setup/action_cable_setup'
 require 'moduloproject/setup/rails_cache_setup'
+require 'moduloproject/setup/brakeman_setup'
 require 'moduloproject/setup/solid_cleanup'
+require 'moduloproject/ticketing_config'
 require 'webmock/rspec'
 
 RSpec.configure do |config|

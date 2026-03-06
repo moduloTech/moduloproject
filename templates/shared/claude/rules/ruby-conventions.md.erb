@@ -1,0 +1,47 @@
+# Ruby & Rails Conventions
+
+## Ruby Version
+- Target Ruby **<%= ruby_version %>**
+- Use modern Ruby syntax (pattern matching, endless methods where readable)
+
+## Rails Version
+- Target Rails **<%= rails_version %>**
+- Follow Rails conventions (Convention over Configuration)
+
+## Database
+<%- if postgresql? -%>
+- PostgreSQL — use `jsonb` columns, array columns, and native types where appropriate
+- Prefer `citext` for case-insensitive text
+<%- elsif mysql? -%>
+- MySQL — use `utf8mb4` charset for all string/text columns
+- Avoid JSON columns for queried data; prefer normalized tables
+<%- else -%>
+- SQLite3 — keep queries simple, avoid database-specific features
+<%- end -%>
+
+<%- if active_job_backend -%>
+## Background Jobs
+- Active Job backend: **<%= active_job_backend %>**
+- Keep jobs idempotent and retriable
+- Set appropriate queue names and priorities
+<%- end -%>
+
+## Code Style
+- Follow RuboCop rules (`.rubocop.yml`)
+- Max line length: 120 characters
+- Use `frozen_string_literal: true` in all Ruby files
+- Prefer `&&` / `||` over `and` / `or`
+
+## Naming
+- Models: singular (`User`, `OrderItem`)
+- Controllers: plural (`UsersController`)
+- Database tables: plural snake_case (`order_items`)
+- Methods/variables: snake_case
+- Constants: UPPER_SNAKE_CASE
+- Classes/Modules: CamelCase
+
+## Testing
+- RSpec for all tests
+- Factory Bot for test data
+- Organize specs mirroring `app/` structure
+- Use `let` and `subject` for setup, `it`/`context`/`describe` for structure

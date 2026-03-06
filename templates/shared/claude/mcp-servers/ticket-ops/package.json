@@ -1,0 +1,11 @@
+{
+  "name": "ticket-ops",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server for ticketing operations (GitLab, Jira, Roadmap)",
+  "main": "index.mjs",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

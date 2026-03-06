@@ -1,0 +1,39 @@
+# Skill: Implement
+
+Implement a feature or fix following project conventions.
+
+## Steps
+
+1. Understand the requirement completely
+2. Plan the implementation:
+   - Which files need to change?
+   - What's the test strategy?
+   - Are there migration needs?
+3. Write the implementation:
+   - Start with the model/service layer
+   - Add controller/routing
+   - Add views/components
+   - Write tests alongside code
+4. Verify:
+   - Run tests: `<%= test_command %>`
+   - Run linter: `bundle exec rubocop`
+<%- if vue? -%>
+   - Run JS linter: `npx eslint app/frontend`
+   - Run JS tests: `npx vitest run`
+<%- end -%>
+
+## Technical Context
+
+- **Default branch**: `<%= default_branch %>`
+<%- if vue? -%>
+- **Frontend**: Vue.js 3 — use `<script setup>`, Composition API, Pinia for state
+<%- elsif hotwire? -%>
+- **Frontend**: Hotwire — use Turbo Frames/Streams, Stimulus controllers
+<%- end -%>
+
+## Rules
+- Write tests for all new code
+- Follow existing patterns in the codebase
+- Keep changes focused and minimal
+- Don't refactor unrelated code
+- Run the full test suite before considering done

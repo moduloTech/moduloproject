@@ -22,6 +22,11 @@ Metrics/BlockLength:
     - 'spec/**/*'
     - '*.gemspec'
 
+Metrics/ClassLength:
+  Exclude:
+    - 'lib/moduloproject/generators/claude_code.rb'
+    - 'lib/moduloproject/commands/new.rb'
+
 Style/Documentation:
   Enabled: false
 

@@ -57,7 +57,9 @@ RSpec.describe Moduloproject::Commands::New do
     let(:rails_cache_setup) { instance_double(Moduloproject::Setup::RailsCacheSetup) }
     let(:solid_cleanup) { instance_double(Moduloproject::Setup::SolidCleanup) }
     let(:modulorails_setup) { instance_double(Moduloproject::ModulorailsSetup) }
+    let(:brakeman_setup) { instance_double(Moduloproject::Setup::BrakemanSetup) }
     let(:vite_setup) { instance_double(Moduloproject::ViteSetup) }
+    let(:ticketing_config) { Moduloproject::TicketingConfig.new(provider: 'none') }
 
     before do
       Dir.chdir(tmpdir)
@@ -68,6 +70,7 @@ RSpec.describe Moduloproject::Commands::New do
       allow(recipe).to receive_messages(default_ruby: '4', validate_ruby!: true,
                                         available_backends_for: %w[sidekiq solid_queue])
 
+      allow(Moduloproject::TicketingConfig).to receive(:resolve).and_return(ticketing_config)
       allow(Moduloproject::RailsGenerator).to receive(:new).and_return(rails_generator)
       allow(rails_generator).to receive(:generate)
       allow(Moduloproject::Setup::ActiveJobSetup).to receive(:new).and_return(active_job_setup)
@@ -80,6 +83,8 @@ RSpec.describe Moduloproject::Commands::New do
       allow(solid_cleanup).to receive(:execute)
       allow(Moduloproject::ModulorailsSetup).to receive(:new).and_return(modulorails_setup)
       allow(modulorails_setup).to receive(:execute)
+      allow(Moduloproject::Setup::BrakemanSetup).to receive(:new).and_return(brakeman_setup)
+      allow(brakeman_setup).to receive(:execute)
       allow(Moduloproject::ViteSetup).to receive(:new).and_return(vite_setup)
       allow(vite_setup).to receive(:execute)
       allow(Moduloproject::Generators).to receive(:run_all)
@@ -167,6 +172,31 @@ RSpec.describe Moduloproject::Commands::New do
     it 'passes frontend to context' do
       expect(Moduloproject::Generators).to receive(:run_all) do |context, _opts|
         expect(context.frontend).to eq('vue')
+      end
+      command.execute
+    end
+
+    it 'calls configure_ticketing via TicketingConfig.resolve' do
+      expect(Moduloproject::TicketingConfig).to receive(:resolve)
+      command.execute
+    end
+
+    it 'calls BrakemanSetup' do
+      expect(Moduloproject::Setup::BrakemanSetup).to receive(:new).with(app_name, hash_including(:ruby))
+      expect(brakeman_setup).to receive(:execute)
+      command.execute
+    end
+
+    it 'passes ticketing config to Generators.run_all' do
+      expect(Moduloproject::Generators).to receive(:run_all) do |_context, opts|
+        expect(opts[:ticketing]).to eq(ticketing_config)
+      end
+      command.execute
+    end
+
+    it 'passes active_job_backend to context' do
+      expect(Moduloproject::Generators).to receive(:run_all) do |context, _opts|
+        expect(context.active_job_backend).to eq('sidekiq')
       end
       command.execute
     end
@@ -312,6 +342,9 @@ RSpec.describe Moduloproject::Commands::New do
         allow(Moduloproject::Recipe).to receive_messages(latest_version: '8.1', load: recipe)
         allow(recipe).to receive_messages(default_ruby: '4', validate_ruby!: true, backend_for: 'sidekiq',
                                           available_backends_for: %w[sidekiq solid_queue])
+        allow(Moduloproject::TicketingConfig).to receive(:resolve).and_return(
+          Moduloproject::TicketingConfig.new(provider: 'none')
+        )
         allow(Moduloproject::RailsGenerator).to receive(:new).and_return(instance_double(Moduloproject::RailsGenerator,
                                                                                          generate: nil))
         allow(Moduloproject::Setup::ActiveJobSetup).to receive(:new).and_return(instance_double(
@@ -329,6 +362,9 @@ RSpec.describe Moduloproject::Commands::New do
         allow(Moduloproject::ModulorailsSetup).to receive(:new).and_return(instance_double(
                                                                              Moduloproject::ModulorailsSetup, execute: nil
                                                                            ))
+        allow(Moduloproject::Setup::BrakemanSetup).to receive(:new).and_return(instance_double(
+                                                                                 Moduloproject::Setup::BrakemanSetup, execute: nil
+                                                                               ))
         allow(Moduloproject::ViteSetup).to receive(:new).and_return(instance_double(Moduloproject::ViteSetup,
                                                                                     execute: nil))
         allow(Moduloproject::Generators).to receive(:run_all)
@@ -355,6 +391,9 @@ RSpec.describe Moduloproject::Commands::New do
         allow(Moduloproject::Recipe).to receive_messages(latest_version: '8.1', load: recipe)
         allow(recipe).to receive_messages(default_ruby: '4', validate_ruby!: true, backend_for: 'sidekiq',
                                           available_backends_for: %w[sidekiq solid_queue])
+        allow(Moduloproject::TicketingConfig).to receive(:resolve).and_return(
+          Moduloproject::TicketingConfig.new(provider: 'none')
+        )
         allow(Moduloproject::RailsGenerator).to receive(:new).and_return(instance_double(Moduloproject::RailsGenerator,
                                                                                          generate: nil))
         allow(Moduloproject::Setup::ActiveJobSetup).to receive(:new).and_return(instance_double(
@@ -372,6 +411,9 @@ RSpec.describe Moduloproject::Commands::New do
         allow(Moduloproject::ModulorailsSetup).to receive(:new).and_return(instance_double(
                                                                              Moduloproject::ModulorailsSetup, execute: nil
                                                                            ))
+        allow(Moduloproject::Setup::BrakemanSetup).to receive(:new).and_return(instance_double(
+                                                                                 Moduloproject::Setup::BrakemanSetup, execute: nil
+                                                                               ))
         allow(Moduloproject::ViteSetup).to receive(:new).and_return(instance_double(Moduloproject::ViteSetup,
                                                                                     execute: nil))
         allow(Moduloproject::Generators).to receive(:run_all)

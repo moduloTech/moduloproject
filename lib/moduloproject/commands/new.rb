@@ -31,6 +31,7 @@ module Moduloproject
         validate_options!
 
         steps = [
+          -> { configure_ticketing },
           -> { create_project_directory },
           -> { generate_rails_app },
           -> { setup_active_job },
@@ -38,6 +39,7 @@ module Moduloproject
           -> { setup_rails_cache },
           -> { cleanup_solid },
           -> { setup_modulorails },
+          -> { setup_brakeman },
           -> { setup_vite },
           -> { generate_infrastructure },
           -> { setup_git },
@@ -105,6 +107,10 @@ module Moduloproject
         end
       end
 
+      def configure_ticketing
+        @ticketing_config = TicketingConfig.resolve(options)
+      end
+
       def create_project_directory
         raise ArgumentError, "Directory already exists: #{name}" if Dir.exist?(name)
 
@@ -136,6 +142,10 @@ module Moduloproject
         ModulorailsSetup.new(name, options).execute
       end
 
+      def setup_brakeman
+        Setup::BrakemanSetup.new(name, options).execute
+      end
+
       def setup_vite
         ViteSetup.new(name, options).execute
       end
@@ -145,7 +155,9 @@ module Moduloproject
 
         puts 'Generating infrastructure files...'
         context = build_context
-        Generators.run_all(context, verbose: true)
+        Generators.run_all(context,
+                           verbose: true,
+                           ticketing: @ticketing_config)
       end
 
       def setup_git
@@ -153,8 +165,27 @@ module Moduloproject
         Dir.chdir(name) do
           system('git init -q')
           system('git add .')
-          system("git commit -q -m 'Initial commit via moduloproject'") # TODO: Add configuration to the message
+          system('git', 'commit', '-q', '-m', commit_message)
         end
+      end
+
+      def commit_message
+        backends = resolved_backends
+
+        lines = [
+          'Initial commit via moduloproject',
+          '',
+          'Configuration:',
+          "  Ruby: #{options[:ruby]}",
+          "  Rails: #{options[:rails]}",
+          "  Database: #{options[:database]}",
+          "  Frontend: #{options[:frontend]}",
+          "  Active Job: #{backends[:active_job]}",
+          "  Action Cable: #{backends[:action_cable]}",
+          "  Rails Cache: #{backends[:rails_cache]}"
+        ]
+
+        lines.join("\n")
       end
 
       def display_success
@@ -165,6 +196,12 @@ module Moduloproject
           "  cd #{name}",
           '  bin/dc up'
         ]
+
+        if @ticketing_config&.enabled?
+          box_content << ''
+          box_content << 'MCP ticketing server configured.'
+          box_content << 'Run: cd .claude/mcp-servers/ticket-ops && npm install'
+        end
 
         puts
         puts TTY::Box.success(box_content.join("\n"), padding: 1)
@@ -179,7 +216,8 @@ module Moduloproject
           adapter: options[:database],
           js_engine: js_engine_symbol,
           frontend: options[:frontend],
-          uses_redis: resolved_backends.values.any? { |b| %w[redis sidekiq].include?(b.to_s) }
+          uses_redis: resolved_backends.values.any? { |b| %w[redis sidekiq].include?(b.to_s) },
+          active_job_backend: resolved_backends[:active_job]
         )
       end
 

@@ -1,0 +1,30 @@
+# Skill: Improve
+
+Identify and apply improvements to existing code.
+
+## Steps
+
+1. Analyze the target code or area
+2. Identify improvement opportunities:
+   - Code duplication that can be extracted
+   - Complex methods that can be simplified
+   - Missing error handling
+   - Performance optimizations
+   - Better naming or structure
+3. Implement improvements one at a time
+4. Verify after each change:
+   - `<%= test_command %>`
+   - `bundle exec rubocop`
+
+## Technical Context
+
+- **Default branch**: `<%= default_branch %>`
+- Make sure improvements are backward-compatible
+- Each improvement should be a separate, reviewable commit
+
+## Rules
+- Don't change behavior without tests proving equivalence
+- Don't introduce new dependencies unless justified
+- Don't over-abstract or over-engineer
+- Keep the scope focused — improve one thing at a time
+- Explain the "why" for each improvement

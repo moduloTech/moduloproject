@@ -1,0 +1,31 @@
+# JavaScript Conventions — Stimulus (Hotwire)
+
+## Import Maps
+- JavaScript bundled via **<%= js_engine %>**
+- Pin dependencies in `config/importmap.rb`
+- No build step required for JavaScript
+
+## Stimulus Controllers
+- One controller per file in `app/javascript/controllers/`
+- Name files as `feature_controller.js` (snake_case)
+- Register controllers via `index.js`
+
+## Naming
+- Controllers: `data-controller="feature-name"` (kebab-case in HTML)
+- Targets: `data-feature-name-target="element"` (camelCase target name)
+- Actions: `data-action="event->controller#method"`
+- Values: `data-feature-name-value-name="..."` (kebab-case)
+
+## Turbo
+- Use Turbo Drive for page navigation (enabled by default)
+- Use Turbo Frames for partial page updates
+- Use Turbo Streams for real-time updates
+- Disable Turbo selectively with `data-turbo="false"` when needed
+
+## CSS
+- Bootstrap for styling
+- Custom styles in `app/assets/stylesheets/`
+
+## Testing
+- System tests with Capybara for full integration
+- Keep JavaScript logic minimal; prefer server-side rendering

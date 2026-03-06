@@ -19,6 +19,9 @@ module Moduloproject
       staging_url
       review_base_url
       uses_redis
+      test_command
+      default_branch
+      active_job_backend
     ].freeze
 
     attr_reader(*ATTRIBUTE_KEYS)
@@ -90,6 +93,9 @@ module Moduloproject
       @image_name = attributes[:image_name] || parameterize(@project_name)
       @environment_name = attributes[:environment_name] || build_environment_name(@project_name)
       @uses_redis = attributes.fetch(:uses_redis, true)
+      @test_command = attributes[:test_command] || 'bundle exec rspec'
+      @default_branch = attributes[:default_branch] || 'main'
+      @active_job_backend = attributes[:active_job_backend]
     end
 
     def initialize_urls(attributes)

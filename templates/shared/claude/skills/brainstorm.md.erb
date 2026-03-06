@@ -1,0 +1,36 @@
+# Skill: Brainstorm
+
+Explore and brainstorm solutions for a problem or feature request.
+
+## Steps
+
+1. Understand the problem or feature request completely
+2. Research existing codebase for related patterns and prior art
+3. Consider multiple approaches with trade-offs:
+   - **Simplicity**: What's the simplest solution that works?
+   - **Performance**: Will this scale with the data/traffic?
+   - **Maintainability**: Can future developers understand and modify this?
+   - **Testing**: How easy is it to test?
+
+## Technical Context
+
+- **Test command**: `<%= test_command %>`
+- **Default branch**: `<%= default_branch %>`
+<%- if postgresql? -%>
+- **Database**: PostgreSQL — can leverage JSONB, arrays, CTEs, window functions
+<%- elsif mysql? -%>
+- **Database**: MySQL — prefer normalized schemas, careful with JSON columns
+<%- end -%>
+<%- if vue? -%>
+- **Frontend**: Vue.js 3 with Composition API — consider component structure and state management
+<%- end -%>
+
+## Output Format
+
+Present 2-3 approaches:
+1. **Approach name** — brief description
+   - Pros: ...
+   - Cons: ...
+   - Estimated complexity: low/medium/high
+
+Recommend one approach with reasoning.

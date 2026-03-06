@@ -201,6 +201,42 @@ RSpec.describe Moduloproject::Context do
     end
   end
 
+  describe '#test_command' do
+    it 'defaults to bundle exec rspec' do
+      context = described_class.new
+      expect(context.test_command).to eq('bundle exec rspec')
+    end
+
+    it 'uses provided value' do
+      context = described_class.new(test_command: 'bin/test')
+      expect(context.test_command).to eq('bin/test')
+    end
+  end
+
+  describe '#default_branch' do
+    it 'defaults to main' do
+      context = described_class.new
+      expect(context.default_branch).to eq('main')
+    end
+
+    it 'uses provided value' do
+      context = described_class.new(default_branch: 'develop')
+      expect(context.default_branch).to eq('develop')
+    end
+  end
+
+  describe '#active_job_backend' do
+    it 'defaults to nil' do
+      context = described_class.new
+      expect(context.active_job_backend).to be_nil
+    end
+
+    it 'uses provided value' do
+      context = described_class.new(active_job_backend: 'sidekiq')
+      expect(context.active_job_backend).to eq('sidekiq')
+    end
+  end
+
   describe '#to_h' do
     it 'returns a hash of all attributes' do
       context = described_class.new(project_name: 'test')

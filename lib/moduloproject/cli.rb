@@ -23,7 +23,8 @@ module Moduloproject
     desc 'new APP_NAME', 'Create a new Rails project with Modulotech conventions'
     option :ruby, type: :string, desc: 'Ruby version (resolved from recipe if omitted)'
     option :rails, type: :string,
-                   desc: "Rails version (default: #{Recipe.latest_version}, supported: #{Recipe.available_versions.join(', ')})"
+                   desc: "Rails version (default: #{Recipe.latest_version}, " \
+                         "supported: #{Recipe.available_versions.join(', ')})"
     option :database, type: :string, default: 'postgresql',
                       desc: 'Database adapter: postgresql, mysql2, sqlite3 (default: postgresql)'
     option :frontend, type: :string, default: 'vue',
@@ -32,6 +33,13 @@ module Moduloproject
     option :action_cable, type: :string, desc: 'Action Cable backend (e.g., redis, solid_cable)'
     option :rails_cache, type: :string, desc: 'Rails cache backend (e.g., redis, solid_cache)'
     option :skip_docker, type: :boolean, default: false, desc: 'Skip Docker/infrastructure setup'
+    option :ticket_provider, type: :string, desc: 'Ticketing provider: gitlab, jira, roadmap, none'
+    option :gitlab_project, type: :string, desc: 'GitLab project path (e.g., group/project)'
+    option :gitlab_host, type: :string, default: 'gitlab.com', desc: 'GitLab hostname'
+    option :jira_url, type: :string, desc: 'Jira instance URL'
+    option :jira_project, type: :string, desc: 'Jira project key'
+    option :jira_email, type: :string, desc: 'Jira API email'
+    option :roadmap_file, type: :string, default: 'ROADMAP.md', desc: 'Roadmap file path'
     def new(app_name)
       Commands::New.new(app_name, options.to_h).execute
     rescue ArgumentError, Recipe::RecipeNotFoundError, Recipe::IncompatibleVersionError => e
