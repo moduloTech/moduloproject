@@ -1,296 +1,118 @@
 # Phase 4 - Command `new`
 
-**Estimate:** 2 days
+**Status:** DONE
 
 ## Objectives
 
-- Port current Bash logic to Ruby
-- Implement project scaffolding
-- Docker-based Rails generation
+- [x] Port current Bash logic to Ruby
+- [x] Project scaffolding via Docker-based Rails generation
+- [x] Backend configuration (Active Job, Action Cable, Rails Cache)
+- [x] Frontend setup (Vue/Vite, Hotwire/Importmap)
+- [x] Ticketing configuration (GitLab, Jira, Roadmap)
+- [x] Brakeman security scanning setup
+- [x] Full integration tests
 
 ## CLI Interface
 
 ```bash
 moduloproject new my-app \
-  --ruby 4 \
+  --ruby 3.4 \
   --rails 8.1 \
   --database postgresql \
-  --frontend vue3 \
-  --js-bundler vite
+  --frontend vue \
+  --active-job sidekiq \
+  --action-cable redis \
+  --rails-cache redis \
+  --ticket-provider gitlab \
+  --gitlab-project group/project
 ```
 
 | Option | Default | Values |
 |--------|---------|--------|
-| `--ruby` | 4 | 4 |
-| `--rails` | 8.1 | 8.1 |
-| `--database` | postgresql | postgresql |
-| `--frontend` | vue3 | vue3, none |
-| `--js-bundler` | vite | vite, importmap |
+| `--ruby` | Resolved from recipe | 3.1, 3.2, 3.3, 3.4 |
+| `--rails` | 8.1 (latest) | 8.1, 8.0, 7.2 |
+| `--database` | postgresql | postgresql, mysql2, sqlite3 |
+| `--frontend` | vue | vue, hotwire |
+| `--active-job` | Recipe default | sidekiq, solid_queue |
+| `--action-cable` | Recipe default | redis, solid_cable |
+| `--rails-cache` | Recipe default | redis, solid_cache |
 | `--skip-docker` | false | - |
+| `--ticket-provider` | Interactive/none | gitlab, jira, roadmap, none |
+| `--gitlab-project` | - | GitLab project path |
+| `--gitlab-host` | gitlab.com | GitLab hostname |
+| `--jira-url` | - | Jira instance URL |
+| `--jira-project` | - | Jira project key |
+| `--jira-email` | - | Jira API email |
+| `--roadmap-file` | ROADMAP.md | Roadmap file path |
 
-## Command Implementation
-
-```ruby
-# lib/moduloproject/commands/new.rb
-module Moduloproject
-  module Commands
-    class New
-      attr_reader :name, :options
-
-      DEFAULTS = {
-        ruby: "4",
-        rails: "8.1",
-        database: "postgresql",
-        frontend: "vue3",
-        js_bundler: "vite",
-        skip_docker: false
-      }.freeze
-
-      def initialize(name, options = {})
-        @name = name
-        @options = DEFAULTS.merge(options)
-      end
-
-      def execute
-        validate_name!
-        validate_options!
-
-        steps = [
-          -> { create_project_directory },
-          -> { generate_rails_app },
-          -> { setup_modulorails },
-          -> { generate_infrastructure },
-          -> { setup_git },
-          -> { display_success }
-        ]
-
-        steps.each(&:call)
-      end
-
-      private
-
-      def validate_name!
-        raise ArgumentError, "Project name required" if name.nil? || name.empty?
-        raise ArgumentError, "Invalid project name: #{name}" unless name.match?(/\A[a-z][a-z0-9_-]*\z/)
-      end
-
-      def validate_options!
-        # Only latest Rails for new projects
-        unless options[:rails] == "8.1"
-          raise ArgumentError, "Only Rails 8.1 is supported for new projects"
-        end
-      end
-
-      def create_project_directory
-        if Dir.exist?(name)
-          raise ArgumentError, "Directory already exists: #{name}"
-        end
-        FileUtils.mkdir_p(name)
-      end
-
-      def generate_rails_app
-        RailsGenerator.new(name, options).generate
-      end
-
-      def setup_modulorails
-        # Add modulorails gem and configure
-        ModulorailsSetup.new(name, options).execute
-      end
-
-      def generate_infrastructure
-        context = build_context
-        
-        Generators.run_all(context) unless options[:skip_docker]
-      end
-
-      def setup_git
-        Dir.chdir(name) do
-          system("git init")
-          system("git add .")
-          system("git commit -m 'Initial commit via moduloproject'")
-        end
-      end
-
-      def display_success
-        puts TTY::Box.success(
-          "Project #{name} created successfully!",
-          "",
-          "Next steps:",
-          "  cd #{name}",
-          "  docker compose up",
-          padding: 1
-        )
-      end
-
-      def build_context
-        {
-          project_name: name,
-          project_root: File.expand_path(name),
-          ruby_version: options[:ruby],
-          rails_version: options[:rails],
-          database: options[:database],
-          frontend: options[:frontend],
-          js_bundler: options[:js_bundler],
-          mcp: default_mcp_config
-        }
-      end
-
-      def default_mcp_config
-        {
-          datadog: true,
-          gitlab: true,
-          github: false,
-          jira: false,
-          confluence: false,
-          notion: false
-        }
-      end
-    end
-  end
-end
-```
-
-## Rails Generator (via Docker)
+## Execution Pipeline (13 steps)
 
 ```ruby
-# lib/moduloproject/rails_generator.rb
-module Moduloproject
-  class RailsGenerator
-    DOCKER_IMAGE = "ruby:4".freeze
-
-    def initialize(name, options)
-      @name = name
-      @options = options
-    end
-
-    def generate
-      command = build_docker_command
-      
-      puts "Generating Rails application..."
-      success = system(command)
-      
-      raise "Rails generation failed" unless success
-    end
-
-    private
-
-    def build_docker_command
-      rails_options = build_rails_options
-      
-      <<~CMD.squish
-        docker run --rm
-        -v "#{Dir.pwd}:/app"
-        -w /app
-        #{DOCKER_IMAGE}
-        bash -c "
-          gem install rails -v '~> #{@options[:rails]}' &&
-          rails new #{@name} #{rails_options}
-        "
-      CMD
-    end
-
-    def build_rails_options
-      opts = []
-      opts << "--database=postgresql"
-      opts << "--skip-test"  # We use RSpec
-      opts << "--skip-system-test"
-      
-      case @options[:js_bundler]
-      when "vite"
-        opts << "--javascript=vite"
-      when "importmap"
-        opts << "--javascript=importmap"
-      end
-
-      opts << "--css=bootstrap" if @options[:frontend] == "vue3"
-      
-      opts.join(" ")
-    end
-  end
-end
+steps = [
+  -> { configure_ticketing },       # TicketingConfig.resolve (CLI > TTY > none)
+  -> { create_project_directory },   # mkdir_p, check not exists
+  -> { generate_rails_app },         # RailsGenerator (Docker-based)
+  -> { setup_active_job },           # Sidekiq or Solid Queue
+  -> { setup_action_cable },         # Redis or Solid Cable
+  -> { setup_rails_cache },          # Redis or Solid Cache
+  -> { cleanup_solid },              # Remove unused Solid gems
+  -> { setup_modulorails },          # Add modulorails gem + initializer
+  -> { setup_brakeman },             # Add brakeman gem
+  -> { setup_vite },                 # Vite + Vue3 setup (if vue frontend)
+  -> { generate_infrastructure },    # Generators.run_all (Docker, CI, Claude, etc.)
+  -> { setup_git },                  # git init + initial commit
+  -> { display_success }             # Success box with next steps
+]
 ```
 
-## Modulorails Setup
+## Key Implementation Details
 
-```ruby
-# lib/moduloproject/modulorails_setup.rb
-module Moduloproject
-  class ModulorailsSetup
-    def initialize(name, options)
-      @name = name
-      @options = options
-    end
+### Recipe System
 
-    def execute
-      add_to_gemfile
-      create_initializer
-    end
+Each Rails version has a recipe (`recipes/rails-X.Y.yml`) defining:
+- Compatible Ruby versions
+- Default backends (active_job, action_cable, rails_cache)
+- Available backends per concern
 
-    private
+### RailsGenerator
 
-    def add_to_gemfile
-      gemfile_path = File.join(@name, "Gemfile")
-      content = File.read(gemfile_path)
-      
-      unless content.include?("modulorails")
-        File.open(gemfile_path, "a") do |f|
-          f.puts "\n# Modulotech shared infrastructure"
-          f.puts "gem 'modulorails', '~> 2.0'"
-        end
-      end
-    end
+Generates Rails app via Docker:
+- Builds Docker command with Rails options (`--database`, `--skip-test`, `--javascript`, `--css`)
+- Runs `rails new` inside a Ruby Docker container
+- Handles Bun/Node.js environment setup
 
-    def create_initializer
-      initializer_content = <<~RUBY
-        # frozen_string_literal: true
+### TicketingConfig
 
-        Modulorails.configure do |config|
-          config.application_name = '#{@name.camelize}'
-          config.main_developer = 'developer@modulotech.fr'
-          config.project_manager = 'manager@modulotech.fr'
-          config.intranet_endpoint = 'https://50cent.modulotech.fr/api/projects'
-          config.intranet_api_key = Rails.application.credentials.dig(:modulorails, :intranet_api_key)
-          config.health_check_path = '/health'
-        end
-      RUBY
+Hybrid resolution: CLI options > interactive TTY prompt > none (non-interactive).
+Supports 4 providers: `gitlab`, `jira`, `roadmap`, `none`.
 
-      path = File.join(@name, "config", "initializers", "modulorails.rb")
-      FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, initializer_content)
-    end
-  end
-end
+### Backend Setup Classes
+
+```
+lib/moduloproject/setup/
+├── active_job_setup.rb       # Delegates to Backends::ActiveJob
+├── action_cable_setup.rb     # Delegates to Backends::ActionCable
+├── rails_cache_setup.rb      # Delegates to Backends::RailsCache
+├── brakeman_setup.rb         # Adds brakeman gem to Gemfile
+└── solid_cleanup.rb          # Removes unused solid_* gems
 ```
 
-## CLI Integration
+### Validation
 
-```ruby
-# lib/moduloproject/cli.rb
-module Moduloproject
-  class CLI < Thor
-    desc "new NAME", "Generate a new Rails project"
-    option :ruby, type: :string, default: "4", desc: "Ruby version"
-    option :rails, type: :string, default: "8.1", desc: "Rails version"
-    option :database, type: :string, default: "postgresql", desc: "Database"
-    option :frontend, type: :string, default: "vue3", desc: "Frontend framework"
-    option :js_bundler, type: :string, default: "vite", desc: "JS bundler"
-    option :skip_docker, type: :boolean, default: false, desc: "Skip Docker setup"
-    def new(name)
-      Commands::New.new(name, options.to_h.transform_keys(&:to_sym)).execute
-    rescue ArgumentError => e
-      error(e.message)
-      exit 1
-    end
-  end
-end
-```
+- Project name: `/\A[a-z][a-z0-9_-]*\z/`
+- Rails version: Must exist in recipes
+- Ruby version: Must be compatible per recipe
+- Database: postgresql, mysql2, sqlite3
+- Frontend: vue, hotwire
+- Backends: Validated against recipe's available_backends_for()
 
-## Deliverables
+## Test Coverage
 
-- [ ] Command::New class
-- [ ] RailsGenerator (Docker-based)
-- [ ] ModulorailsSetup
-- [ ] CLI option parsing
-- [ ] Input validation
-- [ ] Success/error output formatting
-- [ ] Integration test (full project generation)
+- Unit tests: `spec/moduloproject/commands/new_spec.rb`
+- Integration tests: `spec/integration/` with matrix of combinations
+  - Rails: 8.1, 8.0, 7.2
+  - Ruby: 3.1–3.4
+  - Databases: postgresql, mysql2, sqlite3
+  - Frontends: vue, hotwire
+  - Backends: sidekiq, solid_queue, redis, solid_cable, solid_cache
+- 535 examples, 0 failures, 99.37% line coverage
