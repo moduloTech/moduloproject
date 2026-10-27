@@ -192,10 +192,10 @@ postgres_password="mysecretpassword"
 postgres_port="${POSTGRES_PORT:-55432}"
 
 # Stop and remove existing PostgreSQL container
-if docker ps -a --format '{{.Names}}' | grep -q "^$postgres_container_name\$"; then
+if $engine ps -a --format '{{.Names}}' | grep -q "^$postgres_container_name\$"; then
     echo "Stopping existing PostgreSQL container"
-    docker stop $postgres_container_name
-    docker rm $postgres_container_name
+    $engine stop $postgres_container_name
+    $engine rm $postgres_container_name
 fi
 
 echo "Starting PostgreSQL container"
