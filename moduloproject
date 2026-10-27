@@ -16,14 +16,16 @@ update_script() {
     echo "Checking for updates..."
 
     # Download the new version
-    if curl -s "$url" -o "/tmp/moduloproject_new"; then
-        # Compare versions
-        new_version=$(grep "SCRIPT_VERSION=" "$(which moduloproject)" | cut -d'"' -f2 | grep -v "SCRIPT_VERSION")
-        if [ "$new_version" != "$SCRIPT_VERSION" ]; then
+    if curl -fs "$url" -o "/tmp/moduloproject_new"; then
+        # Compare with the version of the downloaded script
+        new_version=$(grep '^SCRIPT_VERSION=' "/tmp/moduloproject_new" | head -n 1 | cut -d'"' -f2)
+        if [ -z "$new_version" ]; then
+            echo "Failed to check for updates: no version found in the downloaded script."
+        elif [ "$new_version" != "$SCRIPT_VERSION" ]; then
             if [ "$force" = true ] || [ "$beta_mode" = true -a "$force" = false ]; then
-                read -p "New version $new_version available. Update? (y/n) " -n 1 -r
-                echo
-                if [[ $REPLY =~ ^[Yy]$ ]]; then
+                printf "New version %s available. Update? (y/n) " "$new_version"
+                read -r REPLY
+                if [ "$REPLY" = y ] || [ "$REPLY" = Y ]; then
                     echo "Updating script..."
                     if sudo mv "/tmp/moduloproject_new" "/usr/local/bin/moduloproject" && sudo chmod +x "/usr/local/bin/moduloproject"; then
                         echo "Update successful. Please run the script again."
