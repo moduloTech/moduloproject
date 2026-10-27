@@ -172,7 +172,7 @@ after_bundle do
 
   # Add .idea to .gitignore
   gitignore_file = '.gitignore'
-  append_to_file(gitignore_file, "\n.idea\n") unless File.read(gitignore_file).match?(/^\s\.idea/)
+  append_to_file(gitignore_file, "\n.idea\n") unless File.read(gitignore_file).match?(/^\s*\.idea\s*$/)
 
   # Git commit: `-a` only stages tracked files, so stage the whole tree first
   git add: '.'
