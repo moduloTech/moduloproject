@@ -59,6 +59,17 @@ after_bundle do
   # Standard configuration
   generate 'modulorails:moduloproject'
 
+  # mise configuration, pinned to the Ruby of the Dockerfile written by modulorails:docker
+  ruby_version = File.read(File.join(destination_root, 'Dockerfile'))[/^ARG RUBY_VERSION=(\S+)/, 1]
+  if ruby_version
+    add_file 'mise.toml', <<~TOML
+      [tools]
+      ruby = "#{ruby_version}"
+    TOML
+  else
+    say('Cannot find RUBY_VERSION in the Dockerfile: mise.toml not created', :red)
+  end
+
   # Lograge configuration
   add_file 'config/initializers/lograge.rb', <<~RUBY
     require 'lograge/sql/extension'
