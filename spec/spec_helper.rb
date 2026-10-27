@@ -27,6 +27,7 @@ require 'yaml'
 
 require 'moduloproject'
 require 'moduloproject/cli'
+require 'moduloproject/container_engine'
 require 'moduloproject/context'
 require 'moduloproject/template_engine'
 require 'moduloproject/generators'
@@ -69,6 +70,17 @@ RSpec.configure do |config|
   config.warnings = true
 
   config.default_formatter = 'doc' if config.files_to_run.one?
+
+  # Pin the engine so that specs do not depend on which daemon runs on the machine
+  config.around do |example|
+    saved = ENV.fetch('CONTAINER_ENGINE', nil)
+    ENV['CONTAINER_ENGINE'] = 'docker'
+    Moduloproject::ContainerEngine.reset!
+    example.run
+  ensure
+    saved.nil? ? ENV.delete('CONTAINER_ENGINE') : ENV['CONTAINER_ENGINE'] = saved
+    Moduloproject::ContainerEngine.reset!
+  end
 
   config.order = :random
   Kernel.srand config.seed

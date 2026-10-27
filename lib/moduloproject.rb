@@ -4,6 +4,7 @@ require_relative 'moduloproject/version'
 
 module Moduloproject
   autoload :CLI, 'moduloproject/cli'
+  autoload :ContainerEngine, 'moduloproject/container_engine'
   autoload :Context, 'moduloproject/context'
   autoload :Generators, 'moduloproject/generators'
   autoload :ModulorailsSetup, 'moduloproject/modulorails_setup'

@@ -45,7 +45,7 @@ module Moduloproject
     end
 
     def docker_image
-      "ruby:#{options[:ruby]}-alpine"
+      ContainerEngine.image("ruby:#{options[:ruby]}-alpine")
     end
 
     def detect_version
@@ -72,7 +72,7 @@ module Moduloproject
 
     def build_modulorails_docker_command
       <<~CMD.gsub(/\s+/, ' ').strip
-        docker run --rm
+        #{ContainerEngine.command} run --rm
         -v "#{Dir.pwd}/#{name}:/app"
         -w /app
         -e HOME=/tmp
@@ -86,9 +86,11 @@ module Moduloproject
     end
 
     def fix_file_ownership
+      return if ContainerEngine.rootless_podman?
       return unless current_uid_gid
 
-      system("docker run --rm -v \"#{Dir.pwd}/#{name}:/app\" #{docker_image} chown -R #{current_uid_gid} /app")
+      system("#{ContainerEngine.command} run --rm -v \"#{Dir.pwd}/#{name}:/app\" " \
+             "#{docker_image} chown -R #{current_uid_gid} /app")
     end
 
     def current_uid_gid

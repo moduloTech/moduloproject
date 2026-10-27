@@ -151,5 +151,25 @@ RSpec.describe Moduloproject::RailsGenerator do
       generator.generate
       expect(chown_called).to be true
     end
+
+    context 'with rootless podman' do
+      before do
+        ENV['CONTAINER_ENGINE'] = 'podman'
+        allow(Moduloproject::ContainerEngine).to receive(:rootless_podman?).and_return(true)
+      end
+
+      it 'runs podman with a fully qualified image' do
+        generator.generate
+        expect(@captured_command).to start_with('podman run --rm')
+        expect(@captured_command).to include('docker.io/library/ruby:4-alpine')
+      end
+
+      it 'does not chown the generated files' do
+        commands = []
+        allow(generator).to receive(:system) { |cmd| commands << cmd }
+        generator.generate
+        expect(commands.grep(/chown/)).to be_empty
+      end
+    end
   end
 end

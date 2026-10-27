@@ -17,6 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CLI options: `--ruby`, `--rails`, `--database`, `--stack` (vue/hotwire), `--skip-docker`
   - Input validation with friendly error messages
 
+## [3.0.1] - 2026-10-27
+
+### Fixed
+
+- Podman support: the container engine is `CONTAINER_ENGINE` if set, else Docker when its daemon answers, else Podman
+- Image names are fully qualified (`docker.io/library/ruby:…`), so Podman no longer depends on short-name resolution
+- Generated files are no longer chowned under rootless Podman, which already maps the container's root to the current
+  user (the chown handed them to a subordinate uid)
+
 ## [3.0.0] - 2025-02-02
 
 ### Added

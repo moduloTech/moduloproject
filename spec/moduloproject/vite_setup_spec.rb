@@ -116,6 +116,14 @@ RSpec.describe Moduloproject::ViteSetup do
         expect(chown_called).to be true
       end
 
+      it 'does not chown under rootless podman' do
+        allow(Moduloproject::ContainerEngine).to receive(:rootless_podman?).and_return(true)
+        commands = []
+        allow(setup).to receive(:system) { |cmd| commands << cmd }
+        setup.execute
+        expect(commands.grep(/chown/)).to be_empty
+      end
+
       context 'when docker command fails' do
         before do
           allow(setup).to receive(:system).and_return(false)

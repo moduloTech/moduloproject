@@ -45,14 +45,14 @@ module Moduloproject
       command = build_docker_command
 
       success = system(command)
-      raise 'Vite installation failed. Please check Docker is running.' unless success
+      raise "Vite installation failed. Please check #{ContainerEngine.command} is running." unless success
 
       fix_file_ownership
     end
 
     def build_docker_command
       <<~CMD.gsub(/\s+/, ' ').strip
-        docker run --rm
+        #{ContainerEngine.command} run --rm
         -v "#{Dir.pwd}/#{name}:/app"
         -w /app
         -e HOME=/tmp
@@ -69,7 +69,7 @@ module Moduloproject
     end
 
     def docker_image
-      "ruby:#{options[:ruby]}-alpine"
+      ContainerEngine.image("ruby:#{options[:ruby]}-alpine")
     end
 
     def database_packages
@@ -162,9 +162,11 @@ module Moduloproject
     end
 
     def fix_file_ownership
+      return if ContainerEngine.rootless_podman?
       return unless current_uid_gid
 
-      system("docker run --rm -v \"#{Dir.pwd}/#{name}:/app\" #{docker_image} chown -R #{current_uid_gid} /app")
+      system("#{ContainerEngine.command} run --rm -v \"#{Dir.pwd}/#{name}:/app\" " \
+             "#{docker_image} chown -R #{current_uid_gid} /app")
     end
 
     def current_uid_gid

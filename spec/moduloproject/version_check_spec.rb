@@ -194,7 +194,7 @@ RSpec.describe Moduloproject::VersionCheck do
 
     it 'shows current and latest versions' do
       expect { described_class.send(:display_update_notification, '3.1.0') }
-        .to output(/3\.0\.0.*3\.1\.0/m).to_stderr
+        .to output(/3\.0\.1.*3\.1\.0/m).to_stderr
     end
   end
 end

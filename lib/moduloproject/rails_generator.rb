@@ -15,12 +15,12 @@ module Moduloproject
     def generate
       command = build_docker_command
 
-      puts 'Generating Rails application via Docker...'
+      puts "Generating Rails application via #{ContainerEngine.command}..."
       puts "(this may take a few minutes on first run)\n\n"
 
       success = system(command)
 
-      raise 'Rails generation failed. Please check Docker is running.' unless success
+      raise "Rails generation failed. Please check #{ContainerEngine.command} is running." unless success
 
       fix_file_ownership
       puts "\nRails application generated successfully!"
@@ -32,7 +32,7 @@ module Moduloproject
       rails_options = build_rails_options
 
       <<~CMD.gsub(/\s+/, ' ').strip
-        docker run --rm
+        #{ContainerEngine.command} run --rm
         -v "#{Dir.pwd}:/app"
         -w /app
         -e HOME=/tmp
@@ -71,14 +71,16 @@ module Moduloproject
     end
 
     def docker_image
-      "ruby:#{options[:ruby]}-alpine"
+      ContainerEngine.image("ruby:#{options[:ruby]}-alpine")
     end
 
     def fix_file_ownership
-      # Docker creates files as root, fix ownership for the current user
+      # The container creates files as root, fix ownership for the current user
+      return if ContainerEngine.rootless_podman?
       return unless current_uid_gid
 
-      system("docker run --rm -v \"#{Dir.pwd}/#{name}:/app\" #{docker_image} chown -R #{current_uid_gid} /app")
+      system("#{ContainerEngine.command} run --rm -v \"#{Dir.pwd}/#{name}:/app\" " \
+             "#{docker_image} chown -R #{current_uid_gid} /app")
     end
 
     def current_uid_gid

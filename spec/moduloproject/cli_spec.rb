@@ -43,15 +43,15 @@ RSpec.describe Moduloproject::CLI do
 
   describe 'version command' do
     it 'displays the version' do
-      expect { described_class.start(['version']) }.to output(/moduloproject 3\.0\.0/).to_stdout
+      expect { described_class.start(['version']) }.to output(/moduloproject 3\.0\.1/).to_stdout
     end
 
     it 'responds to -v flag' do
-      expect { described_class.start(['-v']) }.to output(/moduloproject 3\.0\.0/).to_stdout
+      expect { described_class.start(['-v']) }.to output(/moduloproject 3\.0\.1/).to_stdout
     end
 
     it 'responds to --version flag' do
-      expect { described_class.start(['--version']) }.to output(/moduloproject 3\.0\.0/).to_stdout
+      expect { described_class.start(['--version']) }.to output(/moduloproject 3\.0\.1/).to_stdout
     end
   end
 

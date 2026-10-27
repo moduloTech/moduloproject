@@ -261,14 +261,14 @@ RSpec.describe Moduloproject::ModulorailsSetup do
 
   describe '#docker_image' do
     it 'returns ruby alpine image with correct version' do
-      expect(setup.send(:docker_image)).to eq('ruby:4-alpine')
+      expect(setup.send(:docker_image)).to eq('docker.io/library/ruby:4-alpine')
     end
 
     context 'with different ruby version' do
       let(:options) { { ruby: '3.3', rails: '8.0' } }
 
       it 'uses the specified ruby version' do
-        expect(setup.send(:docker_image)).to eq('ruby:3.3-alpine')
+        expect(setup.send(:docker_image)).to eq('docker.io/library/ruby:3.3-alpine')
       end
     end
   end
@@ -282,6 +282,11 @@ RSpec.describe Moduloproject::ModulorailsSetup do
       expect(command).to include('-e HOME=/tmp')
       expect(command).to include('ruby:4-alpine')
       expect(command).to include('bundle exec modulorails install')
+    end
+
+    it 'runs the configured container engine' do
+      ENV['CONTAINER_ENGINE'] = 'podman'
+      expect(setup.send(:build_modulorails_docker_command)).to start_with('podman run --rm')
     end
   end
 
@@ -302,6 +307,12 @@ RSpec.describe Moduloproject::ModulorailsSetup do
     it 'runs docker chown command' do
       uid_gid = setup.send(:current_uid_gid)
       expect(setup).to receive(:system).with(%r{chown -R #{uid_gid} /app})
+      setup.send(:fix_file_ownership)
+    end
+
+    it 'skips chown under rootless podman, which already maps root to the current user' do
+      allow(Moduloproject::ContainerEngine).to receive(:rootless_podman?).and_return(true)
+      expect(setup).not_to receive(:system)
       setup.send(:fix_file_ownership)
     end
   end
