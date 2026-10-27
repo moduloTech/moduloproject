@@ -38,6 +38,11 @@ initializer 'modulorails.rb', <<~RUBY
   end
 RUBY
 
+# Modulorails' railtie regenerates these on every development boot, without `force`: drop Rails' versions before the
+# first boot (`bundle install` runs installers that load the app), or Thor stops to ask whether to overwrite them
+remove_file 'bin/docker-entrypoint'
+remove_file '.dockerignore'
+
 # Enable sassc-rails
 gsub_file 'Gemfile', /^#\s*(gem\s+['"]sassc-rails['"].*$)/, '\1'
 
